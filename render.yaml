@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: joel-228-api
+    env: node
+    region: oregon
+    plan: free
+    
+    # Build command
+    buildCommand: cd backend && npm install
+    
+    # Start command
+    startCommand: node backend/server.js
+    
+    # Environment variables (add these in Render dashboard)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      # Add other variables in Render dashboard for security
+      # - MONGODB_URI
+      # - JWT_SECRET
+      # - FRONTEND_URL
+      # - ADMIN_EMAIL
+      # - ADMIN_PASSWORD
