@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Sermons - Admin Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .btn { display: inline-block; padding: 8px 16px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9rem; }
+        .btn:hover { opacity: 0.9; }
+        .btn-edit { background: #2196F3; }
+        .btn-delete { background: #f44336; }
+        .btn-logout { background: #dc3545; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; font-weight: 600; color: #555; text-transform: uppercase; font-size: 0.8rem; }
+        tr:hover { background-color: #f5f5f5; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { 
+            background-color: white; 
+            margin: 5% auto; 
+            padding: 25px; 
+            width: 90%; 
+            max-width: 800px; 
+            border-radius: 8px; 
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .upload-options {
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 8px 15px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            white-space: nowrap;
+        }
+        .tab-btn.active {
+            color: #2a5298;
+            border-bottom-color: #2a5298;
+        }
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        .preview-container {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .embed-responsive {
+            position: relative;
+            display: block;
+            width: 100%;
+            padding: 0;
+            overflow: hidden;
+        }
+        .embed-responsive::before {
+            display: block;
+            content: "";
+            padding-top: 56.25%;
+        }
+        .embed-responsive .embed-responsive-item,
+        .embed-responsive iframe,
+        .embed-responsive embed,
+        .embed-responsive object,
+        .embed-responsive video {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .text-muted {
+            color: #6c757d !important;
+            font-size: 0.875em;
+            display: block;
+            margin-top: 0.25rem;
+        }
+        .mt-2 {
+            margin-top: 0.5rem !important;
+        }
+        .sermon-thumbnail {
+            max-width: 100px;
+            max-height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            margin-top: 10px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-actions { text-align: right; margin-top: 20px; }
+        .sermon-thumbnail { max-width: 100px; max-height: 60px; object-fit: cover; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Manage Sermons</h1>
+            <div>
+                <button class="btn" onclick="showAddSermonModal()">Add New Sermon</button>
+                <button class="btn btn-logout" onclick="goToDashboard()" style="margin-left: 10px;">Back to Dashboard</button>
+            </div>
+        </div>
+
+        <table id="sermonsTable">
+            <thead>
+                <tr>
+                    <th>Thumbnail</th>
+                    <th>Title</th>
+                    <th>Preacher</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="sermonsList">
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px;">Loading sermons...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add/Edit Sermon Modal -->
+    <div id="sermonModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add New Sermon</h2>
+            <form id="sermonForm">
+                <input type="hidden" id="sermonId">
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="preacher">Preacher *</label>
+                    <input type="text" id="preacher" required>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date *</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="bibleVerse">Bible Verse</label>
+                    <input type="text" id="bibleVerse" placeholder="e.g., John 3:16">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Media Source</label>
+                    <div class="upload-options">
+                        <div class="tab-buttons">
+                            <button type="button" class="tab-btn active" data-tab="youtube">YouTube</button>
+                            <button type="button" class="tab-btn" data-tab="facebook">Facebook</button>
+                            <button type="button" class="tab-btn" data-tab="upload">Upload</button>
+                        </div>
+                        <div class="tab-content">
+                            <!-- YouTube Tab -->
+                            <div class="tab-pane active" id="youtube-tab">
+                                <input type="url" id="youtubeUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
+                                <small class="text-muted">Paste YouTube video URL</small>
+                                <div id="youtubePreview" class="preview-container mt-2" style="display: none;">
+                                    <div class="embed-responsive embed-responsive-16by9">
+                                        <iframe class="embed-responsive-item" id="youtubeFrame" allowfullscreen></iframe>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Facebook Tab -->
+                            <div class="tab-pane" id="facebook-tab" style="display: none;">
+                                <input type="url" id="facebookUrl" class="form-control" placeholder="https://www.facebook.com/.../videos/...">
+                                <small class="text-muted">Paste Facebook video URL</small>
+                                <div id="facebookPreview" class="preview-container mt-2" style="display: none;">
+                                    <div class="embed-responsive embed-responsive-16by9">
+                                        <iframe class="embed-responsive-item" id="facebookFrame" allowfullscreen></iframe>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- File Upload Tab -->
+                            <div class="tab-pane" id="upload-tab" style="display: none;">
+                                <div class="form-group">
+                                    <label for="audioFile">Audio File (MP3)</label>
+                                    <input type="file" id="audioFile" accept="audio/mp3,audio/*" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="videoFile">Video File (MP4)</label>
+                                    <input type="file" id="videoFile" accept="video/mp4,video/*" class="form-control">
+                                </div>
+                                <div id="mediaPreview" class="mt-2">
+                                    <audio id="audioPreview" controls style="width: 100%; display: none;"></audio>
+                                    <video id="videoPreview" controls style="max-width: 100%; display: none;"></video>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="thumbnail">Thumbnail Image</label>
+                    <input type="file" id="thumbnail" accept="image/*">
+                    <img id="thumbnailPreview" src="" alt="Thumbnail Preview" class="sermon-thumbnail" style="display: none; margin-top: 10px;">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn" id="saveBtn">Save Sermon</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001';
+        let authToken = localStorage.getItem('adminToken');
+        let currentSermonId = null;
+
+        // Check authentication on page load
+        window.onload = function() {
+            if (!authToken) {
+                window.location.href = 'admin-login.html';
+            } else {
+                loadSermons();
+                setupSermonForm();
+                setupFilePreviews();
+            }
+        };
+
+        function setupFilePreviews() {
+            // Show thumbnail preview when a file is selected
+            document.getElementById('thumbnail').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('thumbnailPreview');
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        async function loadSermons() {
+            try {
+                const sermons = await fetchData('/sermons?sort=-date');
+                renderSermons(sermons);
+            } catch (error) {
+                console.error('Error loading sermons:', error);
+                alert('Error loading sermons. Please check console for details.');
+            }
+        }
+
+        function renderSermons(sermons) {
+            const container = document.getElementById('sermonsList');
+            
+            if (!sermons || !Array.isArray(sermons) || sermons.length === 0) {
+                container.innerHTML = '<tr><td colspan="5" style="text-align: center;">No sermons found</td></tr>';
+                return;
+            }
+
+            container.innerHTML = sermons.map(sermon => `
+                <tr>
+                    <td>
+                        ${sermon.thumbnail ? 
+                            `<img src="${sermon.thumbnail}" alt="${sermon.title}" class="sermon-thumbnail">` : 
+                            '<div style="width:100px; height:60px; background:#eee; display:flex; align-items:center; justify-content:center; color:#999;">No Image</div>'
+                        }
+                    </td>
+                    <td>${sermon.title}</td>
+                    <td>${sermon.preacher || 'N/A'}</td>
+                    <td>${new Date(sermon.date).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-edit" onclick="editSermon('${sermon._id}')">Edit</button>
+                        <button class="btn btn-delete" onclick="deleteSermon('${sermon._id}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddSermonModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Sermon';
+            document.getElementById('sermonForm').reset();
+            document.getElementById('thumbnailPreview').style.display = 'none';
+            currentSermonId = null;
+            document.getElementById('sermonModal').style.display = 'block';
+        }
+
+        function editSermon(sermonId) {
+            fetchData(`/sermons/${sermonId}`)
+                .then(sermon => {
+                    document.getElementById('modalTitle').textContent = 'Edit Sermon';
+                    document.getElementById('sermonId').value = sermon._id;
+                    document.getElementById('title').value = sermon.title;
+                    document.getElementById('preacher').value = sermon.preacher || '';
+                    
+                    // Format date for date input
+                    if (sermon.date) {
+                        const date = new Date(sermon.date);
+                        const formattedDate = date.toISOString().split('T')[0];
+                        document.getElementById('date').value = formattedDate;
+                    }
+                    
+                    document.getElementById('bibleVerse').value = sermon.bibleVerse || '';
+                    document.getElementById('description').value = sermon.description || '';
+                    document.getElementById('videoUrl').value = sermon.videoUrl || '';
+                    
+                    // Show thumbnail if exists
+                    const thumbnailPreview = document.getElementById('thumbnailPreview');
+                    if (sermon.thumbnail) {
+                        thumbnailPreview.src = sermon.thumbnail;
+                        thumbnailPreview.style.display = 'block';
+                    } else {
+                        thumbnailPreview.style.display = 'none';
+                    }
+                    
+                    currentSermonId = sermon._id;
+                    document.getElementById('sermonModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching sermon:', error);
+                    alert('Error loading sermon details');
+                });
+        }
+
+        async function deleteSermon(sermonId) {
+            if (!confirm('Are you sure you want to delete this sermon? This action cannot be undone.')) return;
+            
+            try {
+                await fetchData(`/sermons/${sermonId}`, {
+                    method: 'DELETE'
+                });
+                alert('Sermon deleted successfully');
+                loadSermons();
+            } catch (error) {
+                console.error('Error deleting sermon:', error);
+                alert('Error deleting sermon');
+            }
+        }
+
+        function setupSermonForm() {
+            const form = document.getElementById('sermonForm');
+            
+            // Handle tab switching for media sources
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    // Hide all tab content
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.style.display = 'none';
+                    });
+                    // Show selected tab content
+                    document.getElementById(`${tabId}-tab`).style.display = 'block';
+                    // Update active tab button
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Handle YouTube URL preview
+            document.getElementById('youtubeUrl').addEventListener('input', function() {
+                const url = this.value.trim();
+                const youtubePreview = document.getElementById('youtubePreview');
+                const youtubeFrame = document.getElementById('youtubeFrame');
+                
+                if (url.includes('youtube.com/watch?v=')) {
+                    const videoId = url.split('v=')[1];
+                    const ampersandPosition = videoId.indexOf('&');
+                    if (ampersandPosition !== -1) {
+                        videoId = videoId.substring(0, ampersandPosition);
+                    }
+                    youtubeFrame.src = `https://www.youtube.com/embed/${videoId}`;
+                    youtubePreview.style.display = 'block';
+                } else {
+                    youtubePreview.style.display = 'none';
+                }
+            });
+
+            // Handle Facebook URL preview
+            document.getElementById('facebookUrl').addEventListener('input', function() {
+                const url = this.value.trim();
+                const facebookPreview = document.getElementById('facebookPreview');
+                const facebookFrame = document.getElementById('facebookFrame');
+                
+                if (url.includes('facebook.com/') && url.includes('/videos/')) {
+                    const videoId = url.split('/videos/')[1].split('/')[0];
+                    facebookFrame.src = `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fvideo.php%3Fv%3D${videoId}&show_text=0&width=560`;
+                    facebookPreview.style.display = 'block';
+                } else {
+                    facebookPreview.style.display = 'none';
+                }
+            });
+
+            // Handle file preview for uploads
+            document.getElementById('audioFile').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const audioPreview = document.getElementById('audioPreview');
+                const videoPreview = document.getElementById('videoPreview');
+                
+                if (file) {
+                    audioPreview.src = URL.createObjectURL(file);
+                    audioPreview.style.display = 'block';
+                    videoPreview.style.display = 'none';
+                }
+            });
+
+            document.getElementById('videoFile').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const videoPreview = document.getElementById('videoPreview');
+                const audioPreview = document.getElementById('audioPreview');
+                
+                if (file) {
+                    videoPreview.src = URL.createObjectURL(file);
+                    videoPreview.style.display = 'block';
+                    audioPreview.style.display = 'none';
+                }
+            });
+
+            // Handle thumbnail preview
+            document.getElementById('thumbnail').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('thumbnailPreview');
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData();
+                formData.append('title', document.getElementById('title').value);
+                formData.append('preacher', document.getElementById('preacher').value);
+                formData.append('date', document.getElementById('date').value);
+                formData.append('bibleVerse', document.getElementById('bibleVerse').value);
+                formData.append('description', document.getElementById('description').value);
+                
+                // Handle media based on active tab
+                const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
+                if (activeTab === 'youtube') {
+                    formData.append('videoUrl', document.getElementById('youtubeUrl').value);
+                } else if (activeTab === 'facebook') {
+                    formData.append('videoUrl', document.getElementById('facebookUrl').value);
+                } else if (activeTab === 'upload') {
+                    const audioFile = document.getElementById('audioFile').files[0];
+                    const videoFile = document.getElementById('videoFile').files[0];
+                    
+                    if (audioFile) {
+                        formData.append('audio', audioFile);
+                    }
+                    if (videoFile) {
+                        formData.append('video', videoFile);
+                    }
+                }
+                
+                // Handle thumbnail
+                const thumbnailFile = document.getElementById('thumbnail').files[0];
+                if (thumbnailFile) {
+                    formData.append('thumbnail', thumbnailFile);
+                }
+                
+                try {
+                    const method = currentSermonId ? 'PATCH' : 'POST';
+                    const url = currentSermonId ? `/sermons/${currentSermonId}` : '/sermons';
+                    
+                    const response = await fetch(`${API_BASE_URL}${url}`, {
+                        method,
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                            // Don't set Content-Type when using FormData
+                        },
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        throw new Error(error.message || 'Failed to save sermon');
+                    }
+                    
+                    alert(`Sermon ${currentSermonId ? 'updated' : 'created'} successfully`);
+                    closeModal();
+                    loadSermons();
+                } catch (error) {
+                    console.error('Error saving sermon:', error);
+                    alert('Error saving sermon: ' + (error.message || 'Unknown error'));
+                }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('sermonModal').style.display = 'none';
+        }
+
+        async function fetchData(endpoint, options = {}) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            
+            // For FormData, let the browser set the Content-Type with boundary
+            const isFormData = options.body instanceof FormData;
+            
+            const defaultHeaders = {
+                'Authorization': `Bearer ${authToken}`,
+                ...(!isFormData && { 'Content-Type': 'application/json' })
+            };
+            
+            const config = {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...(options.headers || {})
+                }
+            };
+            
+            // Don't stringify if it's FormData
+            if (config.body && typeof config.body === 'object' && !isFormData) {
+                config.body = JSON.stringify(config.body);
+            }
+            
+            const response = await fetch(url, config);
+            
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.message || 'Request failed');
+            }
+            
+            // For 204 No Content responses, return null
+            if (response.status === 204) return null;
+            
+            return response.json();
+        }
+
+        function goToDashboard() {
+            window.location.href = 'admin-dashboard.html';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('sermonModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>

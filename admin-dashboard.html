@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - THE JOEL 2:28 GENERATION</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .dashboard { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #4CAF50; }
+        .stat-card h3 { margin-top: 0; color: #555; font-size: 1rem; }
+        .stat-card p { font-size: 1.8rem; margin: 10px 0 0; font-weight: bold; color: #333; }
+        .section { margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; font-weight: 600; color: #555; text-transform: uppercase; font-size: 0.8rem; }
+        tr:hover { background-color: #f5f5f5; }
+        .btn { display: inline-block; padding: 8px 16px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9rem; }
+        .btn:hover { background: #45a049; }
+        .btn-logout { background: #dc3545; }
+        .btn-logout:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <div>
+                <a href="admin-events.html" class="btn" style="margin-right: 10px;">Manage Events</a>
+                <a href="admin-sermons.html" class="btn" style="margin-right: 10px;">Manage Sermons</a>
+                <button class="btn btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <p id="totalUsers">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Prayer Requests</h3>
+                <p id="totalPrayers">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Sermons</h3>
+                <p id="totalSermons">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Upcoming Events</h3>
+                <p id="totalEvents">0</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2>Recent Prayer Requests</h2>
+                <a href="#" class="btn" onclick="viewAll('prayers')">View All</a>
+            </div>
+            <table id="prayersTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Request</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="prayersList">
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px;">Loading prayer requests...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2>Upcoming Events</h2>
+                <a href="admin-events.html" class="btn">Manage Events</a>
+            </div>
+            <table id="upcomingEventsTable">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="upcomingEventsList">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px;">Loading upcoming events...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2>Recent Past Events</h2>
+                <a href="admin-events.html#past" class="btn">View All Past Events</a>
+            </div>
+            <table id="pastEventsTable">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pastEventsList">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px;">Loading past events...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001';
+        let authToken = localStorage.getItem('adminToken');
+
+        // Check authentication on page load
+        window.onload = function() {
+            if (!authToken) {
+                window.location.href = 'admin-login.html';
+            } else {
+                loadDashboard();
+            }
+        };
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            window.location.href = 'admin-login.html';
+        }
+
+        function viewAll(type) {
+            // Implementation for viewing all items
+            alert(`View all ${type} functionality will be implemented here`);
+        }
+
+        async function loadDashboard() {
+            try {
+                // Load stats
+                const stats = await fetchData(`${API_BASE_URL}/api/v1/admin/dashboard`);
+                if (stats.stats) {
+                    document.getElementById('totalUsers').textContent = stats.stats.totalUsers || 0;
+                    document.getElementById('totalPrayers').textContent = stats.stats.totalPrayers || 0;
+                    document.getElementById('totalSermons').textContent = stats.stats.totalSermons || 0;
+                    document.getElementById('totalEvents').textContent = stats.stats.totalEvents || 0;
+                }
+
+                // Load recent prayer requests
+                const prayers = await fetchData(`${API_BASE_URL}/api/v1/prayers?limit=5`);
+                const prayersList = document.getElementById('prayersList');
+                if (prayers && prayers.length > 0) {
+                    prayersList.innerHTML = prayers.map(prayer => `
+                        <tr>
+                            <td>${prayer.name || 'Anonymous'}</td>
+                            <td>${prayer.request.substring(0, 30)}${prayer.request.length > 30 ? '...' : ''}</td>
+                            <td><span class="status-badge">${prayer.status || 'Pending'}</span></td>
+                            <td>${new Date(prayer.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn" onclick="viewPrayer('${prayer._id}')">View</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    prayersList.innerHTML = '<tr><td colspan="5" style="text-align: center;">No prayer requests found</td></tr>';
+                }
+
+                // Load upcoming events
+                const upcomingEvents = await fetchData('/api/v1/events?upcoming=true&limit=5');
+                const upcomingEventsList = document.getElementById('upcomingEventsList');
+                if (upcomingEvents && upcomingEvents.length > 0) {
+                    upcomingEventsList.innerHTML = upcomingEvents.map(event => `
+                        <tr>
+                            <td>${event.title}</td>
+                            <td>${new Date(event.date).toLocaleString()}</td>
+                            <td>${event.location || 'Online'}</td>
+                            <td>
+                                <a href="admin-events.html?edit=${event._id}" class="btn" style="margin-right: 5px;">Edit</a>
+                                <button class="btn" style="background: #f44336;" onclick="deleteEvent('${event._id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    upcomingEventsList.innerHTML = '<tr><td colspan="4" style="text-align: center;">No upcoming events</td></tr>';
+                }
+
+                // Load past events
+                const pastEvents = await fetchData('/api/v1/events?past=true&limit=5&sort=-date');
+                const pastEventsList = document.getElementById('pastEventsList');
+                if (pastEvents && pastEvents.length > 0) {
+                    pastEventsList.innerHTML = pastEvents.map(event => `
+                        <tr>
+                            <td>${event.title}</td>
+                            <td>${new Date(event.date).toLocaleString()}</td>
+                            <td>${event.location || 'Online'}</td>
+                            <td>
+                                <a href="admin-events.html?edit=${event._id}" class="btn" style="margin-right: 5px;">Edit</a>
+                                <button class="btn" style="background: #f44336;" onclick="deleteEvent('${event._id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    pastEventsList.innerHTML = '<tr><td colspan="4" style="text-align: center;">No past events found</td></tr>';
+                }
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                if (error.message.includes('401')) {
+                    alert('Your session has expired. Please log in again.');
+                    logout();
+                } else {
+                    alert('Error loading dashboard. Please check console for details.');
+                }
+            }
+        }
+
+        function viewPrayer(id) {
+            alert(`Viewing prayer request ${id}`);
+            // Implementation for viewing a single prayer request
+        }
+
+        async function deleteEvent(eventId) {
+            if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete event');
+                }
+
+                // Reload both event lists
+                loadDashboard();
+                alert('Event deleted successfully');
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                alert('Error deleting event. Please try again.');
+            }
+        }
+
+        function viewEvent(id) {
+            // Redirect to the events page with the event ID
+            window.location.href = `admin-events.html?view=${id}`;
+        }
+
+        async function fetchData(endpoint) {
+            try {
+                // If endpoint already includes the full URL, use it as is
+                const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('401 Unauthorized');
+                    }
+                    throw new Error(`API request failed: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                if (error.message === '401 Unauthorized') {
+                    // Redirect to login if unauthorized
+                    window.location.href = 'admin-login.html';
+                }
+                throw error;
+            }
+        }
+    </script>
+</body>
+</html>
