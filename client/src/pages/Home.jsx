@@ -26,7 +26,7 @@ const Home = () => {
                     <p className="text-gray-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light">
                         Joel 2:28 - A Prayer Group Ministry Dedicated to Intercession and Spiritual Growth
                     </p>
-                    <Link to="/prayers" className="bg-zegen-red text-white px-8 py-4 rounded font-bold uppercase tracking-wider hover:bg-red-700 transition transform hover:-translate-y-1 shadow-lg">
+                    <Link to="/contact" className="bg-zegen-red text-white px-8 py-4 rounded font-bold uppercase tracking-wider hover:bg-red-700 transition transform hover:-translate-y-1 shadow-lg">
                         Contact Us
                     </Link>
                 </div>

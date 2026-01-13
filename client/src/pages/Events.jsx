@@ -51,7 +51,7 @@ const Events = () => {
         if (type === 'time') return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    const categories = ['all', 'service', 'outreach', 'youth', 'worship', 'seminar'];
+    const categories = ['all', 'service', 'tongues fest', 'outreach', 'prayers'];
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">

@@ -48,9 +48,6 @@ const Navbar = () => {
                                 <Link to="/signup" className="hover:text-zegen-red transition-colors">Sign Up</Link>
                             </li>
                         </ul>
-                        <Link to="/prayers" className="bg-zegen-red text-white px-6 py-2 rounded text-xs font-bold uppercase tracking-wider hover:bg-red-700 transition transform hover:-translate-y-1">
-                            Donate
-                        </Link>
                     </div>
 
                     {/* Mobile Toggle */}
@@ -74,9 +71,6 @@ const Navbar = () => {
                         </li>
                         <li>
                             <Link to="/signup" onClick={toggleMenu} className="block py-2">Sign Up</Link>
-                        </li>
-                        <li>
-                            <Link to="/prayers" onClick={toggleMenu} className="bg-zegen-red px-6 py-2 rounded inline-block mt-2">Donate</Link>
                         </li>
                     </ul>
                 </div>

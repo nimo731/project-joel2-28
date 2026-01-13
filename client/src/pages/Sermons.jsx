@@ -90,7 +90,7 @@ const Sermons = () => {
         });
     };
 
-    const categories = ['all', 'teaching', 'worship', 'prayer', 'testimony', 'sunday service'];
+    const categories = ['all', 'teaching', 'worship', 'prayer', 'testimony'];
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
