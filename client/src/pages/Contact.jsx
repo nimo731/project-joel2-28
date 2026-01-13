@@ -77,15 +77,6 @@ const Contact = () => {
                         </a>
                     </div>
                 </div>
-
-                {/* Location Info */}
-                <div className="mt-10 text-center bg-zegen-blue text-white p-10 rounded-xl">
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                        <FaMapMarkerAlt className="text-2xl" />
-                        <h3 className="text-2xl font-bold font-serif">Our Location</h3>
-                    </div>
-                    <p className="text-xl">684 West College St. Sun City, USA</p>
-                </div>
             </div>
         </div>
     );

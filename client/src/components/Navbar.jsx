@@ -27,7 +27,7 @@ const Navbar = () => {
                         <img
                             src={logo}
                             alt="Joel 2:28 Generation"
-                            className="h-12 w-auto md:h-14 object-contain"
+                            className="h-16 w-16 md:h-16 object-contain rounded-full border-2 border-white/30 hover:border-zegen-red hover:scale-105 transition-all duration-300"
                         />
                     </Link>
 
