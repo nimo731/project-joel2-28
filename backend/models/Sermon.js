@@ -21,7 +21,7 @@ const sermonSchema = new mongoose.Schema({
     videoLink: {
         type: String,
         required: [true, 'Video link is required'],
-        match: [/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/, 'Please enter a valid URL']
+        match: [/^(https?:\/\/|\/uploads\/).+/, 'Please enter a valid URL or an uploaded file path']
     },
     thumbnailUrl: {
         type: String,

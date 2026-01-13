@@ -1,0 +1,19 @@
+/* Reset default Vite constraints */
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure content takes full width */
+main {
+  flex: 1;
+  width: 100%;
+}

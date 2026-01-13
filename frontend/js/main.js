@@ -1,5 +1,5 @@
-// API Base URL
-const API_BASE_URL = 'http://localhost:5001/api/v1';
+// API Base URL (use relative path so it works in all environments)
+const API_BASE_URL = '/api/v1';
 
 // Load data on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,7 +46,7 @@ async function loadEvents() {
                     <h3>${event.title}</h3>
                     <p>${event.description || 'No description available'}</p>
                     <p><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
-                    <p><strong>Location:</strong> ${event.location || 'TBD'}</p>
+                    <p><strong>Location:</strong> ${event.isOnline ? 'Online' : (event.venue || 'TBD')}</p>
                 </div>
             `).join('');
         } else {
@@ -111,8 +111,8 @@ async function submitPrayer() {
     const name = document.getElementById('prayer-name').value;
     const request = document.getElementById('prayer-request').value;
     
-    if (!name || !request) {
-        alert('Please fill in all fields');
+    if (!request) {
+        alert('Please enter your prayer request');
         return;
     }
     

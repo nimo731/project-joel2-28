@@ -1,5 +1,16 @@
-// API Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+// API Configuration: use same-origin when served by backend, otherwise fallback to localhost:5000
+const API_BASE_URL = (function() {
+  const sameOrigin = `${window.location.origin}/api/v1`;
+  // If running from a non-backend port (e.g., 5501 or file://), prefer localhost:5001 (current backend port)
+  const fallback = 'http://localhost:5001/api/v1';
+  try {
+    const port = window.location.port;
+    if (port === '5000' || port === '') {
+      return '/api/v1'; // same-origin relative path
+    }
+  } catch (_) {}
+  return fallback;
+})();
 console.log('Using API base URL:', API_BASE_URL);
 
 // Navigation functionality
@@ -64,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Watch Live button
         if (e.target.classList.contains('watch-live-btn') || e.target.closest('.watch-live-btn')) {
             e.preventDefault();
-            window.open('https://youtube.com/@james.m.kinyanjui', '_blank');
+            window.open('https://www.youtube.com/@jimkinyanjui?si=HJP6Aq7U9LbGrNKN', '_blank');
             console.log('Watch Live clicked - opened YouTube');
         }
         
@@ -236,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Try to send to backend (optional, no waiting)
-            fetch('http://localhost:5001/api/prayers', {
+            fetch(`${API_BASE_URL}/prayers`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -553,7 +564,7 @@ function handleAuthForms() {
             };
 
             try {
-                const response = await fetch('http://localhost:5001/api/auth/login', {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -666,7 +677,7 @@ async function handleSignupSubmit(e) {
 
     try {
         console.log('Sending registration request to backend...');
-        const response = await fetch('http://localhost:5001/api/auth/register', {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

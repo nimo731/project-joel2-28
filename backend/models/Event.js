@@ -70,7 +70,7 @@ const eventSchema = new mongoose.Schema({
     recurrencePattern: {
         type: String,
         enum: ['daily', 'weekly', 'monthly', 'yearly'],
-        default: null
+        default: undefined
     },
     imageUrl: {
         type: String,

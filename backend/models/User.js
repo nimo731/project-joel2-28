@@ -60,9 +60,32 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    phoneNumber: {
+    phone: {
         type: String,
-        default: null
+        default: null,
+        match: [/^\+?[1-9]\d{1,14}$/, 'Please enter a valid phone number with country code']
+    },
+    notificationPreferences: {
+        email: {
+            type: Boolean,
+            default: true
+        },
+        sms: {
+            type: Boolean,
+            default: false
+        },
+        prayerRequestUpdates: {
+            type: Boolean,
+            default: true
+        },
+        generalUpdates: {
+            type: Boolean,
+            default: true
+        },
+        marketing: {
+            type: Boolean,
+            default: false
+        }
     },
     location: {
         type: String,

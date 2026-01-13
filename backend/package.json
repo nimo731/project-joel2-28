@@ -19,11 +19,15 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.0",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.4"
+    "nodemailer": "^6.9.4",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "jest": "^29.6.2",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4",
+    "twilio": "^5.11.1"
   },
   "keywords": [
     "prayer-group",

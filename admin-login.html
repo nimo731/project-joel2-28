@@ -233,8 +233,10 @@
             buttonLoader.style.display = 'inline-block';
             
             try {
-                const API_BASE_URL = 'http://localhost:5001';
-                const response = await fetch(`${API_BASE_URL}/api/v1/auth/admin/login`, {
+                const API_BASE_URL = (window.location.port === '5000')
+                  ? '/api/v1'
+                  : 'http://localhost:5000/api/v1';
+                const response = await fetch(`${API_BASE_URL}/auth/admin/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -242,7 +244,9 @@
                     body: JSON.stringify({ email, password })
                 });
 
-                const data = await response.json();
+                // Safely parse JSON only if response is JSON
+                const contentType = response.headers.get('content-type') || '';
+                const data = contentType.includes('application/json') ? await response.json() : {};
 
                 if (!response.ok) {
                     throw new Error(data.message || 'Login failed. Please check your credentials and try again.');

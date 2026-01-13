@@ -35,7 +35,7 @@ router.post('/', adminAuth, async (req, res) => {
     console.log('Received event data:', req.body);
     try {
         // Ensure required fields are present
-        const requiredFields = ['title', 'date', 'startTime', 'endTime', 'venue'];
+        const requiredFields = ['title', 'description', 'date', 'startTime', 'endTime', 'venue'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         
         if (missingFields.length > 0) {
@@ -57,7 +57,7 @@ router.post('/', adminAuth, async (req, res) => {
             timezone: req.body.timezone || 'EAT',
             isOnline: req.body.isOnline || false,
             meetingLink: req.body.meetingLink,
-            createdBy: req.admin.id,
+            createdBy: req.user._id,
             isPublished: true
         };
         

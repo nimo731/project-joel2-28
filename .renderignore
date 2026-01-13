@@ -1,0 +1,25 @@
+# Ignore local-only docs and misc
+*.md
+!.env.example
+
+# Ignore root-level static duplicates (backend serves ../frontend/)
+/index.html
+/past-events.html
+/admin-*.html
+/scripts/
+/styles/
+
+# Ignore frontend build artifacts not needed by Render if any
+/frontend/node_modules/
+/frontend/dist/
+/frontend/build/
+
+# Ignore tests and caches
+__tests__/
+coverage/
+.pytest_cache/
+
+# Git and editor
+.git/
+.vscode/
+.DS_Store

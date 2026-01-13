@@ -44,31 +44,44 @@ router.post('/register', [
             });
         }
 
-        const userData = {
-            id: Date.now().toString(),
-            name: fullName,
-            firstName,
-            lastName,
-            email,
-            password, // In production, this should be hashed
-            role: 'member',
-            isActive: true,
-            createdAt: new Date(),
-            lastLogin: null
-        };
-
         // Use MongoDB if available, otherwise use in-memory storage
+        let userPayload;
         if (process.env.MONGODB_URI) {
-            const user = new User(userData);
+            userPayload = {
+                name: fullName,
+                email,
+                password, // Will be hashed by pre-save hook
+                role: 'member',
+                isActive: true,
+                createdAt: new Date(),
+                lastLogin: null
+            };
+
+            const user = new User(userPayload);
             await user.save();
-            userData.id = user._id;
+
+            // Transform for response
+            userPayload = user.toJSON();
+            userPayload.id = user._id;
         } else {
-            storage.users.push(userData);
+            userPayload = {
+                id: Date.now().toString(),
+                name: fullName,
+                firstName,
+                lastName,
+                email,
+                password,
+                role: 'member',
+                isActive: true,
+                createdAt: new Date(),
+                lastLogin: null
+            };
+            storage.users.push(userPayload);
         }
 
         // Generate JWT token
         const token = jwt.sign(
-            { userId: userData.id, role: userData.role },
+            { userId: userPayload.id || userPayload._id, role: userPayload.role },
             process.env.JWT_SECRET || 'joel228generation_secret',
             { expiresIn: '7d' }
         );
@@ -78,10 +91,10 @@ router.post('/register', [
             message: 'User registered successfully',
             token,
             user: {
-                id: userData.id,
-                name: userData.name,
-                email: userData.email,
-                role: userData.role
+                id: userPayload.id || userPayload._id,
+                name: userPayload.name,
+                email: userPayload.email,
+                role: userPayload.role
             }
         });
 

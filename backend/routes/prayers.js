@@ -64,6 +64,26 @@ router.post('/', [
     }
 });
 
+// @route   GET /api/prayers/my
+// @desc    Get current user's prayer requests
+// @access  Private
+router.get('/my', auth, async (req, res) => {
+    try {
+        let prayers;
+        if (process.env.MONGODB_URI) {
+            prayers = await PrayerRequest.find({ userId: req.user.userId })
+                .sort({ createdAt: -1 });
+        } else {
+            const storage = req.app.locals.storage;
+            prayers = storage.prayers.filter(p => p.userId === req.user.userId);
+        }
+        res.json({ success: true, prayers });
+    } catch (error) {
+        console.error('Get my prayers error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 // @route   GET /api/prayers
 // @desc    Get all public prayer requests
 // @access  Public
@@ -119,7 +139,7 @@ router.get('/', async (req, res) => {
 router.post('/:id/pray', async (req, res) => {
     try {
         const prayerRequest = await PrayerRequest.findById(req.params.id);
-        
+
         if (!prayerRequest) {
             return res.status(404).json({
                 success: false,
@@ -132,7 +152,7 @@ router.post('/:id/pray', async (req, res) => {
             const alreadyPrayed = prayerRequest.prayedBy.some(
                 entry => entry.user.toString() === req.user.userId
             );
-            
+
             if (!alreadyPrayed) {
                 prayerRequest.prayedBy.push({ user: req.user.userId });
             }
@@ -174,7 +194,7 @@ router.put('/:id', auth, [
         }
 
         const prayerRequest = await PrayerRequest.findById(req.params.id);
-        
+
         if (!prayerRequest) {
             return res.status(404).json({
                 success: false,
@@ -191,7 +211,7 @@ router.put('/:id', auth, [
         }
 
         const { request, followUp, status } = req.body;
-        
+
         if (request) prayerRequest.request = request;
         if (followUp) prayerRequest.followUp = followUp;
         if (status) {
