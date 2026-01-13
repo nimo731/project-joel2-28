@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaBars, FaTimes, FaMapMarkerAlt, FaFacebookF, FaTwitter, FaInstagram, FaYoutube, FaSearch } from 'react-icons/fa';
+import logo from '../assets/logo.png';
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
@@ -18,29 +19,16 @@ const Navbar = () => {
 
     return (
         <header className="w-full z-50 fixed top-0 transition-all duration-300">
-            {/* Top Bar - Zegen Style */}
-            <div className="bg-[#111c30] text-gray-400 text-xs py-2 hidden md:block border-b border-gray-800">
-                <div className="container mx-auto px-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-2"><FaMapMarkerAlt /> 684 West College St. Sun City, USA</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <a href="#" className="hover:text-white transition"><FaFacebookF /></a>
-                        <a href="#" className="hover:text-white transition"><FaTwitter /></a>
-                        <a href="#" className="hover:text-white transition"><FaInstagram /></a>
-                        <a href="#" className="hover:text-white transition"><FaYoutube /></a>
-                    </div>
-                </div>
-            </div>
-
             {/* Main Navbar */}
             <nav className={`w-full transition-all duration-300 ${scrolled || !isHome ? 'bg-[#1a2b4b] shadow-lg py-3' : 'bg-transparent py-5'}`}>
                 <div className="container mx-auto px-4 flex justify-between items-center">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="text-2xl font-bold text-white tracking-widest uppercase">
-                            ZEGEN<span className="text-zegen-red text-3xl">†</span>
-                        </div>
+                        <img
+                            src={logo}
+                            alt="Joel 2:28 Generation"
+                            className="h-12 w-auto md:h-14 object-contain"
+                        />
                     </Link>
 
                     {/* Desktop Menu */}

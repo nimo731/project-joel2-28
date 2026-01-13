@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaQuoteLeft, FaStar } from 'react-icons/fa';
 
 const Testimonials = () => {
+    const navigate = useNavigate();
     // Ideally fetch from API, for now placeholders match the prompt's simplicity
     const [testimonials, setTestimonials] = useState([]);
 
@@ -32,6 +34,19 @@ const Testimonials = () => {
             }
         ]);
     }, []);
+
+    const handleSubmitTestimony = () => {
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            // Redirect to login if not authenticated
+            navigate('/login');
+        } else {
+            // TODO: Open testimony submission form or modal
+            alert('Testimony submission form coming soon!');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-white pb-20">
@@ -78,7 +93,10 @@ const Testimonials = () => {
                 <p className="text-gray-600 mb-8">
                     Your testimony can encourage someone else. We'd love to hear how God is working in your life.
                 </p>
-                <button className="px-8 py-3 bg-zegen-red text-white font-bold rounded-full shadow-lg hover:bg-red-700 hover:shadow-xl transition-all transform hover:-translate-y-1">
+                <button
+                    onClick={handleSubmitTestimony}
+                    className="px-8 py-3 bg-zegen-red text-white font-bold rounded-full shadow-lg hover:bg-red-700 hover:shadow-xl transition-all transform hover:-translate-y-1"
+                >
                     Submit Your Testimony
                 </button>
             </div>

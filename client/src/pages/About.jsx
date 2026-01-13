@@ -22,76 +22,70 @@ const About = () => {
             {/* Mission & Vision */}
             <div className="py-20 bg-white">
                 <div className="container mx-auto px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        {/* Card 1 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                        {/* Mission */}
                         <div className="bg-gray-50 p-10 rounded-xl shadow-sm border-b-4 border-zegen-red hover:shadow-xl transition-shadow group">
                             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl text-zegen-red shadow-md mb-6 group-hover:bg-zegen-red group-hover:text-white transition-colors">
                                 <FaGlobe />
                             </div>
                             <h3 className="text-2xl font-bold text-gray-800 mb-4 font-serif">Our Mission</h3>
                             <p className="text-gray-600 leading-relaxed">
-                                To reach the nations with the gospel of Jesus Christ, demonstrating His power and love through service, worship, and the prophetic word.
+                                A well where we gather to contend for our generation as we experience Christ through prayers. For men always ought to pray. We are THE JOEL 2:28 GENERATION, experiencing the outpouring of God's Spirit.
                             </p>
                         </div>
-                        {/* Card 2 */}
+                        {/* Vision */}
                         <div className="bg-gray-50 p-10 rounded-xl shadow-sm border-b-4 border-zegen-blue hover:shadow-xl transition-shadow group">
                             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl text-zegen-blue shadow-md mb-6 group-hover:bg-zegen-blue group-hover:text-white transition-colors">
                                 <FaHistory />
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-800 mb-4 font-serif">Our History</h3>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-4 font-serif">Our Vision</h3>
                             <p className="text-gray-600 leading-relaxed">
-                                Founded on the principles of the early church, we have grown from a small prayer group into a global movement of believers dedicated to revival.
-                            </p>
-                        </div>
-                        {/* Card 3 */}
-                        <div className="bg-gray-50 p-10 rounded-xl shadow-sm border-b-4 border-zegen-red hover:shadow-xl transition-shadow group">
-                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl text-zegen-red shadow-md mb-6 group-hover:bg-zegen-red group-hover:text-white transition-colors">
-                                <FaUsers />
-                            </div>
-                            <h3 className="text-2xl font-bold text-gray-800 mb-4 font-serif">Our Community</h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                We believe in the power of unity. Our community is diverse, welcoming, and Spirit-filled, providing a home for everyone to grow in faith.
+                                To see lives transformed through the power of prayer and to witness God's Spirit moving in our generation, fulfilling His promise to pour out His Spirit upon all flesh.
                             </p>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Values Section */}
-            <div className="bg-[#111c30] py-20 text-white relative overflow-hidden">
-                <div className="container mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center">
-                    <div className="md:w-1/2 mb-12 md:mb-0">
-                        <h2 className="text-4xl font-bold font-serif mb-6">Driven by <span className="text-zegen-red">Values</span></h2>
-                        <div className="space-y-6">
-                            <div className="flex items-start">
-                                <FaHandHoldingHeart className="text-2xl text-zegen-red mr-4 mt-1" />
-                                <div>
-                                    <h4 className="text-xl font-bold mb-1">Service</h4>
-                                    <p className="text-gray-400">Serving others as Christ served the church.</p>
+                    {/* Foundation Scripture */}
+                    <div className="bg-gradient-to-r from-zegen-blue to-[#1a3b5c] p-10 rounded-xl text-white mb-16">
+                        <h3 className="text-2xl font-bold mb-4 font-serif">Our Foundation</h3>
+                        <blockquote className="text-lg italic border-l-4 border-zegen-red pl-6">
+                            "And it shall come to pass afterward, that I will pour out my spirit upon all flesh; and your sons and your daughters shall prophesy, your old men shall dream dreams, your young men shall see visions"
+                            <footer className="text-sm mt-4 not-italic opacity-80">- Joel 2:28 (KJV)</footer>
+                        </blockquote>
+                    </div>
+
+                    {/* Leaders Section */}
+                    <div>
+                        <h3 className="text-3xl font-bold text-center text-gray-800 mb-10 font-serif">Our Leaders</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {/* Leader 1 */}
+                            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow text-center border border-gray-100">
+                                <div className="w-24 h-24 bg-gradient-to-br from-zegen-red to-red-700 rounded-full flex items-center justify-center text-4xl text-white shadow-lg mx-auto mb-4">
+                                    <FaUsers />
                                 </div>
+                                <h4 className="text-xl font-bold text-gray-800 mb-1">James Kinyanjui Maina</h4>
+                                <p className="text-zegen-red font-semibold mb-2">CEO & Founder</p>
+                                <span className="text-gray-600 text-sm">Leader of THE JOEL 2:28 GENERATION</span>
                             </div>
-                            <div className="flex items-start">
-                                <FaGlobe className="text-2xl text-zegen-blue mr-4 mt-1" />
-                                <div>
-                                    <h4 className="text-xl font-bold mb-1">Global Impact</h4>
-                                    <p className="text-gray-400">Thinking beyond our walls to touch the world.</p>
+                            {/* Leader 2 */}
+                            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow text-center border border-gray-100">
+                                <div className="w-24 h-24 bg-gradient-to-br from-zegen-blue to-blue-900 rounded-full flex items-center justify-center text-4xl text-white shadow-lg mx-auto mb-4">
+                                    <FaHandHoldingHeart />
                                 </div>
+                                <h4 className="text-xl font-bold text-gray-800 mb-1">Ruth Muriuki</h4>
+                                <p className="text-zegen-blue font-semibold mb-2">Ministry Helper</p>
+                                <span className="text-gray-600 text-sm">Supporting the vision</span>
                             </div>
-                            <div className="flex items-start">
-                                <FaUsers className="text-2xl text-zegen-red mr-4 mt-1" />
-                                <div>
-                                    <h4 className="text-xl font-bold mb-1">Discipleship</h4>
-                                    <p className="text-gray-400">Raising up the next generation of leaders.</p>
+                            {/* Leader 3 */}
+                            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow text-center border border-gray-100">
+                                <div className="w-24 h-24 bg-gradient-to-br from-zegen-red to-red-700 rounded-full flex items-center justify-center text-4xl text-white shadow-lg mx-auto mb-4">
+                                    <FaUsers />
                                 </div>
+                                <h4 className="text-xl font-bold text-gray-800 mb-1">Peter Kariuki</h4>
+                                <p className="text-zegen-red font-semibold mb-2">Ministry Leader</p>
+                                <span className="textgray-600 text-sm">Prayer & fellowship coordinator</span>
                             </div>
                         </div>
-                    </div>
-                    <div className="md:w-1/2 md:pl-12">
-                        <img
-                            src="https://images.unsplash.com/photo-1529070538774-1843cb3265df?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                            alt="Community"
-                            className="rounded-lg shadow-2xl border-4 border-white/10"
-                        />
                     </div>
                 </div>
             </div>
