@@ -11,7 +11,10 @@ const router = express.Router();
 // @route   POST /api/testimonies
 // @desc    Submit new testimony
 // @access  Public
-router.post('/', [
+// @route   POST /api/testimonies
+// @desc    Submit new testimony
+// @access  Public
+router.post('/', auth, [
     body('name').trim().isLength({ min: 1 }).withMessage('Name is required'),
     body('testimony').trim().isLength({ min: 10 }).withMessage('Testimony must be at least 10 characters'),
     body('title').optional().trim().isLength({ max: 100 }), // Add title validation

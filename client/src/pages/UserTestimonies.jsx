@@ -11,6 +11,7 @@ const UserTestimonies = () => {
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [error, setError] = useState('');
 
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user')) || { name: 'User' };
@@ -18,21 +19,23 @@ const UserTestimonies = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
+
         try {
             await api.post('/testimonies', {
                 title,
                 testimony: content,
-                category,
+                category: category.toLowerCase(), // Ensure lowercase
                 isAnonymous,
-                name: user.name // Public name or anonymous logic handled by backend usually, but we send it
+                name: user.name || 'Anonymous Member' // Fallback if name is missing
             });
             setSuccess(true);
             setTimeout(() => {
                 navigate('/userdashboard');
             }, 3000);
-        } catch (error) {
-            console.error('Error submitting testimony', error);
-            alert('Failed to submit testimony. Please try again.');
+        } catch (err) {
+            console.error('Error submitting testimony', err);
+            setError(err.response?.data?.message || 'Failed to submit testimony. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -48,6 +51,13 @@ const UserTestimonies = () => {
                     <h1 className="text-3xl font-bold text-gray-800">Share Your Testimony</h1>
                     <p className="text-gray-500 mt-2">Your story can inspire thousands. Share what God has done in your life.</p>
                 </div>
+
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 flex items-center gap-3">
+                        <div className="flex-shrink-0 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs">!</div>
+                        <p>{error}</p>
+                    </div>
+                )}
 
                 {success ? (
                     <div className="bg-green-50 border border-green-200 text-green-700 p-8 rounded-xl text-center animate-pulse">
