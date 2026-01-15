@@ -8,9 +8,14 @@ const router = express.Router();
 // @route   POST /api/testimonies
 // @desc    Submit new testimony
 // @access  Public
+// @route   POST /api/testimonies
+// @desc    Submit new testimony
+// @access  Public
 router.post('/', [
     body('name').trim().isLength({ min: 1 }).withMessage('Name is required'),
-    body('testimony').trim().isLength({ min: 10 }).withMessage('Testimony must be at least 10 characters')
+    body('testimony').trim().isLength({ min: 10 }).withMessage('Testimony must be at least 10 characters'),
+    body('title').optional().trim().isLength({ max: 100 }), // Add title validation
+    body('category').optional().isIn(['healing', 'provision', 'breakthrough', 'salvation', 'deliverance', 'other'])
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -22,29 +27,26 @@ router.post('/', [
             });
         }
 
-        const { name, email, testimony } = req.body;
-        const storage = req.app.locals.storage;
+        const { title, name, email, testimony, category, isAnonymous } = req.body;
 
-        const testimonyData = {
-            id: Date.now().toString(),
-            userId: req.user?.userId || null,
-            name,
-            email: email || null,
-            testimony,
-            isApproved: false,
-            isFeatured: false,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-
-        // Use MongoDB if available, otherwise use in-memory storage
-        if (process.env.MONGODB_URI) {
-            const mongoTestimony = new Testimony(testimonyData);
-            await mongoTestimony.save();
-            testimonyData.id = mongoTestimony._id;
-        } else {
-            storage.testimonies.push(testimonyData);
+        // Ensure userId is present (from auth middleware)
+        if (!req.user || !req.user._id) {
+            return res.status(401).json({ success: false, message: 'Authentication required' });
         }
+
+        const testimonyData = new Testimony({
+            userId: req.user._id,
+            title: title || 'My Testimony',
+            name: isAnonymous ? 'Anonymous' : (name || req.user.name),
+            email: email || req.user.email,
+            testimony,
+            category: category || 'other',
+            isAnonymous: isAnonymous || false
+            // isApproved & isFeatured default to false in model
+            // likes & likedBy default empty
+        });
+
+        await testimonyData.save();
 
         res.status(201).json({
             success: true,
@@ -56,7 +58,7 @@ router.post('/', [
         console.error('Testimony creation error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: error.message || 'Server error'
         });
     }
 });
