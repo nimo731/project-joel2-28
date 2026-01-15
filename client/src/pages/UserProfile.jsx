@@ -1,40 +1,195 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
-import { FaSave, FaUserCircle } from 'react-icons/fa';
+import { FaSave, FaUserCircle, FaCamera } from 'react-icons/fa';
+import api from '../services/api';
+import logo from '../assets/logo.png';
 
 const UserProfile = () => {
-    const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem('user');
-        return savedUser ? JSON.parse(savedUser) : {
-            name: 'Sister Grace',
-            email: 'grace@example.com',
-            phone: '+1 234 567 8900',
-            bio: 'member of the choir.'
-        };
+    // Try to get initial role from localStorage for immediate UI consistency
+    const getInitialRole = () => {
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const isAdminRoute = window.location.pathname.startsWith('/admin');
+        return storedUser.role || (isAdminRoute ? 'admin' : 'member');
+    };
+
+    const [user, setUser] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        bio: '',
+        role: getInitialRole(),
+        profileImage: ''
     });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            const response = await api.get('/users/profile');
+            const userData = response.data.user;
+            if (userData) {
+                setUser({
+                    name: userData.name || '',
+                    email: userData.email || '',
+                    phone: userData.phone || '',
+                    bio: userData.bio || '',
+                    role: userData.role || getInitialRole(),
+                    profileImage: userData.profileImage || ''
+                });
+            }
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            setMessage({ type: 'error', text: 'Failed to load profile details. Please try logging in again.' });
+            setLoading(false);
+        }
+    };
 
     const handleChange = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        alert('Profile updated! (Mock)');
+    const handlePhotoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            setMessage({ type: 'error', text: 'Please select an image file.' });
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setMessage({ type: 'error', text: 'Image must be less than 5MB.' });
+            return;
+        }
+
+        setUploadingPhoto(true);
+        setMessage({ type: '', text: '' });
+
+        const formData = new FormData();
+        formData.append('profileImage', file);
+
+        try {
+            const response = await api.post('/users/profile/photo', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setUser(prev => ({ ...prev, profileImage: response.data.profileImage }));
+            setMessage({ type: 'success', text: 'Profile photo updated!' });
+        } catch (error) {
+            console.error('Photo upload failed:', error);
+            setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to upload photo.' });
+        } finally {
+            setUploadingPhoto(false);
+        }
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        setMessage({ type: '', text: '' });
+        try {
+            const response = await api.patch('/users/profile', {
+                name: user.name,
+                phone: user.phone,
+                bio: user.bio
+            });
+            setUser(prev => ({ ...prev, ...response.data.user }));
+            // Update localStorage
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            localStorage.setItem('user', JSON.stringify({ ...storedUser, name: user.name }));
+
+            setMessage({ type: 'success', text: 'Profile updated successfully!' });
+        } catch (error) {
+            console.error('Profile update failed:', error);
+            setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update profile.' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <DashboardLayout role="user">
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-zegen-red"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    const isAdmin = user.role === 'admin';
+    const backendUrl = 'http://localhost:5001';
+
     return (
-        <DashboardLayout role="user" user={user}>
+        <DashboardLayout role={isAdmin ? "admin" : "user"} user={user}>
             <div className="max-w-2xl mx-auto">
                 <h1 className="text-2xl font-bold text-gray-800 mb-6">Profile Settings</h1>
 
+                {message.text && (
+                    <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                        {message.text}
+                    </div>
+                )}
+
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                    <div className="flex items-center justify-center mb-8">
-                        <div className="relative">
-                            <FaUserCircle className="text-gray-300 text-6xl" />
-                            <button className="absolute bottom-0 right-0 bg-zegen-blue text-white p-1 rounded-full text-xs shadow-md">
-                                Edit
-                            </button>
+                    <div className="flex flex-col items-center justify-center mb-8">
+                        <div className="relative mb-2">
+                            {isAdmin ? (
+                                <div className="h-24 w-24 rounded-full border-4 border-zegen-red/20 p-1 flex items-center justify-center overflow-hidden bg-gray-50">
+                                    <img src={logo} alt="Admin Logo" className="h-full w-full object-contain" />
+                                </div>
+                            ) : user.profileImage ? (
+                                <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 overflow-hidden bg-gray-50">
+                                    <img
+                                        src={`${backendUrl}${user.profileImage}`}
+                                        alt="Profile"
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
+                            ) : (
+                                <FaUserCircle className="text-gray-300 text-7xl" />
+                            )}
+                            {!isAdmin && (
+                                <>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handlePhotoUpload}
+                                        accept="image/*"
+                                        className="hidden"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={uploadingPhoto}
+                                        className={`absolute bottom-0 right-0 bg-zegen-blue text-white p-2 rounded-full text-xs shadow-md border-2 border-white hover:bg-blue-700 transition-colors ${uploadingPhoto ? 'opacity-50 cursor-wait' : ''}`}
+                                    >
+                                        {uploadingPhoto ? (
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        ) : (
+                                            <FaCamera className="text-sm" />
+                                        )}
+                                    </button>
+                                </>
+                            )}
                         </div>
+                        {isAdmin && (
+                            <span className="text-xs font-bold text-zegen-red uppercase tracking-wider bg-red-50 px-3 py-1 rounded-full">
+                                Official Admin Profile
+                            </span>
+                        )}
+                        {!isAdmin && (
+                            <p className="text-xs text-gray-400 mt-2">Click the camera icon to upload a photo</p>
+                        )}
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -46,7 +201,8 @@ const UserProfile = () => {
                                     name="name"
                                     value={user.name}
                                     onChange={handleChange}
-                                    className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none"
+                                    required
+                                    className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none border-gray-200"
                                 />
                             </div>
                             <div>
@@ -57,7 +213,7 @@ const UserProfile = () => {
                                     value={user.email}
                                     onChange={handleChange}
                                     disabled
-                                    className="w-full border rounded-lg p-3 text-gray-500 bg-gray-50 cursor-not-allowed"
+                                    className="w-full border rounded-lg p-3 text-gray-500 bg-gray-50 cursor-not-allowed border-gray-200"
                                 />
                             </div>
                         </div>
@@ -69,7 +225,8 @@ const UserProfile = () => {
                                 name="phone"
                                 value={user.phone}
                                 onChange={handleChange}
-                                className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none"
+                                placeholder="+254..."
+                                className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none border-gray-200"
                             />
                         </div>
 
@@ -80,13 +237,18 @@ const UserProfile = () => {
                                 value={user.bio}
                                 onChange={handleChange}
                                 rows="3"
-                                className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none"
+                                placeholder="A brief note about your walk with Christ..."
+                                className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none border-gray-200"
                             ></textarea>
                         </div>
 
                         <div className="pt-4 border-t border-gray-100 flex justify-end">
-                            <button type="submit" className="bg-zegen-red hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold shadow-md transition-all flex items-center">
-                                <FaSave className="mr-2" /> Save Changes
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className={`bg-zegen-red hover:bg-red-700 text-white px-8 py-3 rounded-lg font-bold shadow-lg transition-all flex items-center gap-2 ${saving ? 'opacity-70 cursor-wait' : ''}`}
+                            >
+                                <FaSave /> {saving ? 'Saving...' : 'Save Changes'}
                             </button>
                         </div>
                     </form>

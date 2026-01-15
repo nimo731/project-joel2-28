@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { FaCalendar, FaMapMarkerAlt, FaClock, FaSearch, FaTicketAlt } from 'react-icons/fa';
+import EmptyState from '../components/EmptyState';
 
 const Events = () => {
     const [events, setEvents] = useState([]);
@@ -27,18 +28,7 @@ const Events = () => {
             setLoading(false);
         } catch (err) {
             console.error('Error fetching events:', err);
-            // Fallbacks are now less critical as we seeded db, but good for safety
-            setEvents([
-                {
-                    _id: '1',
-                    title: 'Community Outreach',
-                    description: 'Join us as we serve our local community with food distribution and prayer stations.',
-                    date: new Date('2023-12-15T09:00:00').toISOString(),
-                    location: 'Central City Park',
-                    type: 'outreach',
-                    imageUrl: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800&q=80'
-                }
-            ]);
+            setEvents([]);
             setLoading(false);
         }
     };
@@ -91,9 +81,10 @@ const Events = () => {
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-zegen-red"></div>
                     </div>
                 ) : filteredEvents.length === 0 ? (
-                    <div className="text-center py-20 text-gray-500">
-                        <p className="text-xl">No upcoming events found.</p>
-                    </div>
+                    <EmptyState
+                        message="No events available yet"
+                        icon={FaCalendar}
+                    />
                 ) : (
                     <div className="space-y-6">
                         {filteredEvents.map(event => (

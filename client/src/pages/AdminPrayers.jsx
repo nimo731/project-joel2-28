@@ -43,7 +43,11 @@ const AdminPrayers = () => {
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Manage Prayer Requests</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {loading ? <p>Loading...</p> : prayers.map(prayer => (
+                {loading ? <p>Loading...</p> : prayers.length === 0 ? (
+                    <div className="col-span-2 bg-white p-12 rounded-xl text-center text-gray-400 italic shadow-sm border border-gray-100">
+                        "Prayer requests will appear here once submitted"
+                    </div>
+                ) : prayers.map(prayer => (
                     <div key={prayer._id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
                         <div className="flex justify-between items-start mb-4">
                             <div>

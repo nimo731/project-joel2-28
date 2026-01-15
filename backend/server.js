@@ -51,7 +51,7 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
     : devCors,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 200 // For legacy browser support

@@ -15,8 +15,12 @@ const AdminEvents = () => {
         startTime: '09:00',
         endTime: '11:00',
         venue: '',
-        category: 'fellowship'
+        category: 'fellowship',
+        imageUrl: '',
+        videoUrl: ''
     });
+    const [imageFile, setImageFile] = useState(null);
+    const [videoFile, setVideoFile] = useState(null);
 
     useEffect(() => {
         fetchEvents();
@@ -40,34 +44,47 @@ const AdminEvents = () => {
             fetchEvents();
         } catch (error) {
             console.error('Delete failed', error);
-            setEvents(events.filter(e => e._id !== id));
+            alert('Failed to delete event.');
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const data = new FormData();
+        Object.keys(formData).forEach(key => {
+            data.append(key, formData[key]);
+        });
+        // Backwards compatibility/Model sync
+        data.append('location', formData.venue);
+
+        if (imageFile) data.append('image', imageFile);
+        if (videoFile) data.append('video', videoFile);
+
         try {
             if (currentEvent) {
-                await api.patch(`/admin/events/${currentEvent._id}`, formData);
+                // Using PUT as updated in admin.js
+                await api.put(`/admin/events/${currentEvent._id}`, data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             } else {
-                await api.post('/admin/events', formData);
+                await api.post('/admin/events', data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             }
             setIsModalOpen(false);
             fetchEvents();
+            setImageFile(null);
+            setVideoFile(null);
         } catch (error) {
             console.error('Operation failed', error);
-            // Demo fallback
-            if (currentEvent) {
-                setEvents(events.map(e => e._id === currentEvent._id ? { ...e, ...formData } : e));
-            } else {
-                setEvents([{ ...formData, _id: Date.now().toString() }, ...events]);
-            }
-            setIsModalOpen(false);
+            alert('Failed to save event. ' + (error.response?.data?.message || ''));
         }
     };
 
     const openModal = (event = null) => {
         setCurrentEvent(event);
+        setImageFile(null);
+        setVideoFile(null);
         if (event) {
             setFormData({
                 title: event.title,
@@ -76,11 +93,13 @@ const AdminEvents = () => {
                 startTime: event.startTime || '09:00',
                 endTime: event.endTime || '11:00',
                 venue: event.venue || '',
-                category: event.category || 'fellowship'
+                category: event.category || 'fellowship',
+                imageUrl: event.imageUrl || '',
+                videoUrl: event.videoUrl || ''
             });
         } else {
             setFormData({
-                title: '', description: '', date: '', startTime: '09:00', endTime: '11:00', venue: '', category: 'fellowship'
+                title: '', description: '', date: '', startTime: '09:00', endTime: '11:00', venue: '', category: 'fellowship', imageUrl: '', videoUrl: ''
             });
         }
         setIsModalOpen(true);
@@ -109,6 +128,8 @@ const AdminEvents = () => {
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
                             <tr><td colSpan="5" className="p-6 text-center text-gray-500">Loading...</td></tr>
+                        ) : events.length === 0 ? (
+                            <tr><td colSpan="5" className="p-12 text-center text-gray-400 italic">"No events available yet"</td></tr>
                         ) : events.map(event => (
                             <tr key={event._id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-gray-800">{event.title}</td>
@@ -132,8 +153,8 @@ const AdminEvents = () => {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl relative">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto pt-10 pb-10">
+                    <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl relative my-auto">
                         <h2 className="text-xl font-bold mb-4">{currentEvent ? 'Edit Event' : 'New Event'}</h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
@@ -172,6 +193,33 @@ const AdminEvents = () => {
                                     </select>
                                 </div>
                             </div>
+
+                            <div className="grid grid-cols-1 gap-4 p-3 bg-gray-50 rounded-lg text-sm">
+                                <p className="text-xs font-bold text-gray-500 uppercase">Event Media</p>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Event Image</label>
+                                    <input type="file" accept="image/*" className="w-full text-sm" onChange={e => setImageFile(e.target.files[0])} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Event Video (Optional)</label>
+                                    <input type="file" accept="video/*" className="w-full text-sm" onChange={e => setVideoFile(e.target.files[0])} />
+                                </div>
+                                <div className="relative">
+                                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-gray-200"></div>
+                                    <span className="relative bg-gray-50 px-2 text-xs text-gray-400 font-medium whitespace-nowrap">OR External URL</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <label className="block font-medium text-gray-700">Image URL</label>
+                                        <input type="text" className="w-full border rounded p-1" value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} />
+                                    </div>
+                                    <div>
+                                        <label className="block font-medium text-gray-700">Video URL</label>
+                                        <input type="text" className="w-full border rounded p-1" value={formData.videoUrl} onChange={e => setFormData({ ...formData, videoUrl: e.target.value })} />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Description</label>
                                 <textarea required rows="3" className="w-full border rounded p-2" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })}></textarea>

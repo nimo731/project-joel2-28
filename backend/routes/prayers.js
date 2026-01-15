@@ -7,8 +7,8 @@ const router = express.Router();
 
 // @route   POST /api/prayers
 // @desc    Create new prayer request
-// @access  Public
-router.post('/', [
+// @access  Private (Authenticated Users)
+router.post('/', auth, [
     body('request').trim().isLength({ min: 1 }).withMessage('Prayer request is required')
 ], async (req, res) => {
     try {
@@ -26,8 +26,8 @@ router.post('/', [
 
         const prayerRequest = {
             id: Date.now().toString(),
-            userId: req.user?.userId || null,
-            name: isAnonymous ? 'Anonymous' : (name || 'Anonymous'),
+            userId: req.user.id || req.user._id, // Must be authenticated
+            name: isAnonymous ? 'Anonymous' : (name || req.user.name),
             request,
             category: category || 'other',
             isAnonymous: isAnonymous || false,
@@ -35,7 +35,7 @@ router.post('/', [
             prayerCount: 0,
             prayedBy: [],
             status: 'active',
-            visibility: 'public',
+            visibility: 'private', // Always private
             createdAt: new Date(),
             updatedAt: new Date()
         };
@@ -64,72 +64,31 @@ router.post('/', [
     }
 });
 
-// @route   GET /api/prayers/my
-// @desc    Get current user's prayer requests
-// @access  Private
-router.get('/my', auth, async (req, res) => {
+// @route   GET /api/prayers
+// @desc    Get all (removed as prayers are private)
+// @access  Private (Admin only - handled in admin routes)
+router.get('/', auth, async (req, res) => {
+    // Regular users cannot see all prayers
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied'
+        });
+    }
+
+    // Admin can see all (fallback for admin dashboard if needed, though admin routes exist)
     try {
-        let prayers;
+        let prayerRequests;
         if (process.env.MONGODB_URI) {
-            prayers = await PrayerRequest.find({ userId: req.user.userId })
+            prayerRequests = await PrayerRequest.find()
+                .populate('userId', 'name')
                 .sort({ createdAt: -1 });
         } else {
-            const storage = req.app.locals.storage;
-            prayers = storage.prayers.filter(p => p.userId === req.user.userId);
+            prayerRequests = req.app.locals.storage.prayers;
         }
-        res.json({ success: true, prayers });
+        res.json({ success: true, prayers: prayerRequests });
     } catch (error) {
-        console.error('Get my prayers error:', error);
         res.status(500).json({ success: false, message: 'Server error' });
-    }
-});
-
-// @route   GET /api/prayers
-// @desc    Get all public prayer requests
-// @access  Public
-router.get('/', async (req, res) => {
-    try {
-        const { category, status, page = 1, limit = 10 } = req.query;
-        const storage = req.app.locals.storage;
-
-        let prayerRequests;
-
-        if (process.env.MONGODB_URI) {
-            const filter = { visibility: 'public' };
-            if (category) filter.category = category;
-            if (status) filter.status = status;
-
-            prayerRequests = await PrayerRequest.find(filter)
-                .populate('userId', 'name')
-                .sort({ isUrgent: -1, createdAt: -1 })
-                .limit(limit * 1)
-                .skip((page - 1) * limit);
-        } else {
-            prayerRequests = storage.prayers
-                .filter(p => p.visibility === 'public')
-                .sort((a, b) => {
-                    if (a.isUrgent !== b.isUrgent) return b.isUrgent - a.isUrgent;
-                    return new Date(b.createdAt) - new Date(a.createdAt);
-                })
-                .slice((page - 1) * limit, page * limit);
-        }
-
-        res.json({
-            success: true,
-            prayerRequests,
-            pagination: {
-                current: page,
-                pages: Math.ceil(storage.prayers.length / limit),
-                total: storage.prayers.length
-            }
-        });
-
-    } catch (error) {
-        console.error('Get prayer requests error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
-        });
     }
 });
 
@@ -235,6 +194,25 @@ router.put('/:id', auth, [
             success: false,
             message: 'Server error'
         });
+    }
+});
+
+// @route   DELETE /api/prayers/:id
+// @desc    Delete prayer request
+// @access  Admin
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Not authorized' });
+        }
+
+        const prayer = await PrayerRequest.findByIdAndDelete(req.params.id);
+        if (!prayer) {
+            return res.status(404).json({ success: false, message: 'Prayer request not found' });
+        }
+        res.json({ success: true, message: 'Prayer request deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 

@@ -63,7 +63,8 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: String,
         default: null,
-        match: [/^\+?[1-9]\d{1,14}$/, 'Please enter a valid phone number with country code']
+        // More lenient regex: allows +, spaces, dashes, parentheses, and digits
+        match: [/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/, 'Please enter a valid phone number']
     },
     notificationPreferences: {
         email: {
@@ -90,15 +91,20 @@ const userSchema = new mongoose.Schema({
     location: {
         type: String,
         default: null
+    },
+    bio: {
+        type: String,
+        default: null,
+        maxlength: [500, 'Bio cannot exceed 500 characters']
     }
 }, {
     timestamps: true
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
-    
+
     try {
         const salt = await bcrypt.genSalt(12);
         this.password = await bcrypt.hash(this.password, salt);
@@ -109,18 +115,18 @@ userSchema.pre('save', async function(next) {
 });
 
 // Compare password method
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Compare admin password method
-userSchema.methods.compareAdminPassword = async function(candidatePassword) {
+userSchema.methods.compareAdminPassword = async function (candidatePassword) {
     if (!this.adminPassword) return false;
     return await bcrypt.compare(candidatePassword, this.adminPassword);
 };
 
 // Check if admin password was changed after JWT was issued
-userSchema.methods.changedAdminPasswordAfter = function(JWTTimestamp) {
+userSchema.methods.changedAdminPasswordAfter = function (JWTTimestamp) {
     if (this.adminPasswordChangedAt) {
         const changedTimestamp = parseInt(
             this.adminPasswordChangedAt.getTime() / 1000,
@@ -132,21 +138,21 @@ userSchema.methods.changedAdminPasswordAfter = function(JWTTimestamp) {
 };
 
 // Create admin password reset token
-userSchema.methods.createAdminPasswordResetToken = function() {
+userSchema.methods.createAdminPasswordResetToken = function () {
     const resetToken = crypto.randomBytes(32).toString('hex');
-    
+
     this.adminPasswordResetToken = crypto
         .createHash('sha256')
         .update(resetToken)
         .digest('hex');
-    
+
     this.adminPasswordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-    
+
     return resetToken;
 };
 
 // Remove sensitive fields from JSON output
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function () {
     const user = this.toObject();
     delete user.password;
     delete user.adminPassword;

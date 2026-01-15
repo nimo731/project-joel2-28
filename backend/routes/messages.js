@@ -100,4 +100,27 @@ router.put('/:id/read', protect, async (req, res) => {
     }
 });
 
+// @route   DELETE /api/v1/messages/:id
+// @desc    Delete message
+// @access  Private
+router.delete('/:id', protect, async (req, res) => {
+    try {
+        const message = await Message.findById(req.params.id);
+        if (!message) {
+            return res.status(404).json({ success: false, message: 'Message not found' });
+        }
+
+        // Only recipient or admin can delete? Or sender too?
+        // Typically recipient or admin.
+        if (message.recipient.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        await Message.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'Message deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+});
+
 module.exports = router;

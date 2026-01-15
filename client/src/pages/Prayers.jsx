@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { FaPray, FaUserSecret, FaCheckCircle, FaPaperPlane } from 'react-icons/fa';
+import { FaPray, FaUserSecret, FaCheckCircle, FaPaperPlane, FaHandsHelping } from 'react-icons/fa';
+import EmptyState from '../components/EmptyState';
 
 const Prayers = () => {
     const [prayers, setPrayers] = useState([]);
@@ -25,11 +26,7 @@ const Prayers = () => {
             setLoading(false);
         } catch (err) {
             console.error('Error fetching prayers:', err);
-            // Demo data
-            setPrayers([
-                { _id: '1', title: 'Healing for my mother', content: 'Please pray for my mom recovering from surgery.', authorName: 'Sarah', isAnonymous: false, createdAt: new Date().toISOString() },
-                { _id: '2', title: 'Job opportunity', content: 'Praying for favor in an upcoming interview.', authorName: '', isAnonymous: true, createdAt: new Date().toISOString() }
-            ]);
+            setPrayers([]);
             setLoading(false);
         }
     };
@@ -160,9 +157,10 @@ const Prayers = () => {
                             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-zegen-red"></div>
                         </div>
                     ) : prayers.length === 0 ? (
-                        <div className="bg-white rounded-xl p-8 text-center text-gray-500 shadow-sm border border-gray-100">
-                            No prayer requests visible yet. Be the first to share!
-                        </div>
+                        <EmptyState
+                            message="Prayer requests will appear here once submitted"
+                            icon={FaHandsHelping}
+                        />
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {prayers.map(prayer => (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import DashboardLayout from '../components/DashboardLayout';
-import { FaPlus, FaPray, FaComments } from 'react-icons/fa';
+import { FaPlus, FaPray, FaComments, FaQuoteLeft } from 'react-icons/fa';
 
 const UserDashboard = () => {
     const [user, setUser] = useState(() => {
@@ -48,12 +48,20 @@ const UserDashboard = () => {
                     <h1 className="text-3xl font-bold text-gray-800">Welcome Back</h1>
                     <p className="text-gray-500">Manage your prayers and stay connected.</p>
                 </div>
-                <button
-                    onClick={() => navigate('/userdashboard/prayers')}
-                    className="bg-zegen-red text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center"
-                >
-                    <FaPlus className="mr-2" /> New Prayer Request
-                </button>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => navigate('/userdashboard/prayers')}
+                        className="bg-zegen-red text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center"
+                    >
+                        <FaPlus className="mr-2" /> New Prayer Request
+                    </button>
+                    <button
+                        onClick={() => navigate('/userdashboard/testimonies')}
+                        className="bg-white text-zegen-blue border-2 border-zegen-blue px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center"
+                    >
+                        <FaQuoteLeft className="mr-2" /> Share Testimony
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { FaPlay, FaCalendar, FaUser, FaSearch, FaFilter } from 'react-icons/fa';
+import { FaPlay, FaCalendar, FaUser, FaSearch, FaVideo } from 'react-icons/fa';
+import EmptyState from '../components/EmptyState';
 
 const Sermons = () => {
     const [sermons, setSermons] = useState([]);
@@ -26,39 +27,7 @@ const Sermons = () => {
             setLoading(false);
         } catch (err) {
             console.error('Error fetching sermons:', err);
-            // Fallback content for visual verification if API fails
-            setSermons([
-                {
-                    _id: '1',
-                    title: 'The Power of Persistent Prayer',
-                    preacher: 'Pastor John Doe',
-                    date: new Date().toISOString(),
-                    description: 'Unlock the spiritual breakthroughs that come through unwavering faith and consistent prayer.',
-                    category: 'teaching',
-                    videoLink: '#',
-                    thumbnailUrl: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800&q=80'
-                },
-                {
-                    _id: '2',
-                    title: 'Walking in the Spirit',
-                    preacher: 'Rev. Sarah Smith',
-                    date: new Date(Date.now() - 86400000 * 3).toISOString(),
-                    description: 'Discover how to live a life guided by the Holy Spirit in a modern, distracted world.',
-                    category: 'worship',
-                    videoLink: '#',
-                    thumbnailUrl: 'https://images.unsplash.com/photo-1507692049790-de58293a4697?w=800&q=80'
-                },
-                {
-                    _id: '3',
-                    title: 'Faith Over Fear',
-                    preacher: 'Bishop Michael',
-                    date: new Date(Date.now() - 86400000 * 7).toISOString(),
-                    description: 'Overcoming the anxieties of life with a roadmap of faith from the Scriptures.',
-                    category: 'sunday service',
-                    videoLink: '#',
-                    thumbnailUrl: 'https://images.unsplash.com/photo-1445445290350-16a63c2c2b5c?w=800&q=80'
-                }
-            ]);
+            setSermons([]);
             setLoading(false);
         }
     };
@@ -143,14 +112,23 @@ const Sermons = () => {
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-zegen-red"></div>
                     </div>
                 ) : filteredSermons.length === 0 ? (
-                    <div className="text-center py-20 text-gray-500">
-                        <p className="text-xl">No sermons found matching your criteria.</p>
-                        <button
-                            onClick={() => { setActiveFilter('all'); setSearchQuery('') }}
-                            className="mt-4 text-zegen-red hover:underline font-medium"
-                        >
-                            Clear filters
-                        </button>
+                    <div>
+                        {sermons.length === 0 ? (
+                            <EmptyState
+                                message="Sermons not yet uploaded"
+                                icon={FaVideo}
+                            />
+                        ) : (
+                            <div className="text-center py-20 text-gray-500">
+                                <p className="text-xl">No sermons found matching your criteria.</p>
+                                <button
+                                    onClick={() => { setActiveFilter('all'); setSearchQuery('') }}
+                                    className="mt-4 text-zegen-red hover:underline font-medium"
+                                >
+                                    Clear filters
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

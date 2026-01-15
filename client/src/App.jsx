@@ -18,6 +18,7 @@ import AdminTestimonies from './pages/AdminTestimonies';
 import AdminMessages from './pages/AdminMessages';
 import UserDashboard from './pages/UserDashboard';
 import UserPrayers from './pages/UserPrayers';
+import UserTestimonies from './pages/UserTestimonies';
 import UserMessages from './pages/UserMessages';
 import UserProfile from './pages/UserProfile';
 import './App.css';
@@ -41,6 +42,7 @@ function App() {
             {/* User Dashboard */}
             <Route path="/userdashboard/*" element={<UserDashboard />} />
             <Route path="/userdashboard/prayers" element={<UserPrayers />} />
+            <Route path="/userdashboard/testimonies" element={<UserTestimonies />} />
             <Route path="/userdashboard/messages" element={<UserMessages />} />
             <Route path="/userdashboard/profile" element={<UserProfile />} />
 
@@ -51,6 +53,7 @@ function App() {
             <Route path="/admin/prayers" element={<AdminPrayers />} />
             <Route path="/admin/testimonies" element={<AdminTestimonies />} />
             <Route path="/admin/messages" element={<AdminMessages />} />
+            <Route path="/admin/profile" element={<UserProfile />} />
           </Routes>
         </main>
         <Footer />

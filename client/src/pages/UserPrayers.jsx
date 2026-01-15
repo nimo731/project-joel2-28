@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import DashboardLayout from '../components/DashboardLayout';
-import { FaPlus, FaPray, FaLock, FaGlobe } from 'react-icons/fa';
+import { FaPlus, FaPray, FaLock, FaGlobe, FaHandsHelping } from 'react-icons/fa';
+import EmptyState from '../components/EmptyState';
 
 const UserPrayers = () => {
     const [prayers, setPrayers] = useState([]);
@@ -58,8 +59,11 @@ const UserPrayers = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {loading ? <p>Loading...</p> : prayers.length === 0 ? (
-                    <div className="col-span-3 text-center py-10 text-gray-500">
-                        You haven't shared any prayer requests yet.
+                    <div className="col-span-3">
+                        <EmptyState
+                            message="You haven't shared any prayer requests yet."
+                            icon={FaHandsHelping}
+                        />
                     </div>
                 ) : prayers.map(prayer => (
                     <div key={prayer._id || prayer.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col relative group hover:shadow-md transition-shadow">

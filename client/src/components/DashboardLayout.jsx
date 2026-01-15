@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { FaBars, FaTimes, FaHome, FaBible, FaCalendarAlt, FaPray, FaComments, FaSignOutAlt, FaUserCog, FaTachometerAlt, FaStar } from 'react-icons/fa';
+import { FaBars, FaTimes, FaHome, FaBible, FaCalendarAlt, FaPray, FaComments, FaSignOutAlt, FaUserCog, FaTachometerAlt, FaStar, FaUserCircle } from 'react-icons/fa';
+import logo from '../assets/logo.png';
 
 const DashboardLayout = ({ children, role = 'user', user = {} }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,6 +20,7 @@ const DashboardLayout = ({ children, role = 'user', user = {} }) => {
         { name: 'Prayers', to: '/admin/prayers', icon: <FaPray /> },
         { name: 'Testimonies', to: '/admin/testimonies', icon: <FaStar /> },
         { name: 'Messages', to: '/admin/messages', icon: <FaComments /> },
+        { name: 'Profile', to: '/admin/profile', icon: <FaUserCog /> },
     ] : [
         { name: 'My Dashboard', to: '/userdashboard', icon: <FaTachometerAlt /> },
         { name: 'My Prayers', to: '/userdashboard/prayers', icon: <FaPray /> },
@@ -31,8 +33,9 @@ const DashboardLayout = ({ children, role = 'user', user = {} }) => {
             {/* Sidebar - Desktop */}
             <aside className={`fixed inset-y-0 left-0 bg-zegen-blue text-white w-64 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out z-30 shadow-xl`}>
                 <div className="p-6 flex items-center justify-between border-b border-gray-700">
-                    <div className="text-xl font-bold font-serif tracking-wide">
-                        <span className="text-zegen-red">ZEGEN</span> ADMIN
+                    <div className="text-xl font-bold font-serif tracking-wide flex items-center gap-2">
+                        <img src={logo} alt="Logo" className="h-8 w-8 rounded-full" />
+                        <span><span className="text-zegen-red">ZEGEN</span> {role === 'admin' ? 'ADMIN' : 'USER'}</span>
                     </div>
                     <button onClick={() => setSidebarOpen(false)} className="md:hidden text-gray-300">
                         <FaTimes />
@@ -41,12 +44,18 @@ const DashboardLayout = ({ children, role = 'user', user = {} }) => {
 
                 <div className="p-6">
                     <div className="flex items-center mb-8">
-                        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-lg font-bold mr-3">
-                            {user.name ? user.name.charAt(0) : 'A'}
-                        </div>
-                        <div>
-                            <div className="font-semibold text-sm">{user.name || 'Admin User'}</div>
-                            <div className="text-xs text-gray-400 capitalize">{role}</div>
+                        {role === 'admin' ? (
+                            <div className="w-12 h-12 rounded-full border-2 border-white/20 p-1 mr-3 bg-white/10 overflow-hidden">
+                                <img src={logo} alt="Admin Profile" className="w-full h-full object-contain" />
+                            </div>
+                        ) : (
+                            <div className="w-10 h-10 rounded-full bg-zegen-red flex items-center justify-center text-lg font-bold mr-3 shadow-md">
+                                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                        )}
+                        <div className="overflow-hidden">
+                            <div className="font-semibold text-sm truncate">{user.name || (role === 'admin' ? 'Admin' : 'User')}</div>
+                            <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{role} Account</div>
                         </div>
                     </div>
 

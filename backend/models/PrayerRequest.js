@@ -26,7 +26,7 @@ const prayerRequestSchema = new mongoose.Schema({
     visibility: {
         type: String,
         enum: ['public', 'private'],
-        default: 'public'
+        default: 'private'
     },
     isAnonymous: {
         type: Boolean,

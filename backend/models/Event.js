@@ -76,6 +76,10 @@ const eventSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    videoUrl: {
+        type: String,
+        default: null
+    },
     isPublished: {
         type: Boolean,
         default: false
