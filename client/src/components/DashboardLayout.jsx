@@ -48,6 +48,14 @@ const DashboardLayout = ({ children, role = 'user', user = {} }) => {
                             <div className="w-12 h-12 rounded-full border-2 border-white/20 p-1 mr-3 bg-white/10 overflow-hidden">
                                 <img src={logo} alt="Admin Profile" className="w-full h-full object-contain" />
                             </div>
+                        ) : user.profileImage ? (
+                            <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shadow-md border-2 border-white/20">
+                                <img
+                                    src={`http://localhost:5001${user.profileImage}`}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
                         ) : (
                             <div className="w-10 h-10 rounded-full bg-zegen-red flex items-center justify-center text-lg font-bold mr-3 shadow-md">
                                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
