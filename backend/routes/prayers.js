@@ -64,6 +64,26 @@ router.post('/', auth, [
     }
 });
 
+// @route   GET /api/prayers/my
+// @desc    Get current user's prayer requests
+// @access  Private
+router.get('/my', auth, async (req, res) => {
+    try {
+        let prayers;
+        if (process.env.MONGODB_URI) {
+            prayers = await PrayerRequest.find({ userId: req.user._id })
+                .sort({ createdAt: -1 });
+        } else {
+            const storage = req.app.locals.storage;
+            prayers = storage.prayers.filter(p => p.userId === (req.user.id || req.user._id?.toString()));
+        }
+        res.json({ success: true, prayers });
+    } catch (error) {
+        console.error('Error fetching user prayers:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 // @route   GET /api/prayers
 // @desc    Get all (removed as prayers are private)
 // @access  Private (Admin only - handled in admin routes)

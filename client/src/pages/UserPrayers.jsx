@@ -7,6 +7,7 @@ import EmptyState from '../components/EmptyState';
 const UserPrayers = () => {
     const [prayers, setPrayers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         title: '', request: '', category: 'personal', isAnonymous: false, isUrgent: false
@@ -34,14 +35,17 @@ const UserPrayers = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
         try {
-            await api.post('/prayers', { ...formData, name: user.name }); // Use actual user name/context
+            await api.post('/prayers', { ...formData, name: user.name });
             setIsModalOpen(false);
             fetchMyPrayers();
             setFormData({ title: '', request: '', category: 'personal', isAnonymous: false, isUrgent: false });
         } catch (error) {
             console.error('Submit failed', error);
-            alert('Failed to submit prayer request.');
+            alert('Failed to submit prayer request. Please try again.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -141,8 +145,19 @@ const UserPrayers = () => {
                                 </label>
                             </div>
                             <div className="flex justify-end gap-3 mt-6">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
-                                <button type="submit" className="px-4 py-2 bg-zegen-red text-white rounded hover:bg-red-700">Submit</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} disabled={submitting} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50">Cancel</button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className={`px-4 py-2 bg-zegen-red text-white rounded hover:bg-red-700 transition-colors flex items-center gap-2 ${submitting ? 'opacity-70 cursor-wait' : ''}`}
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            Submitting...
+                                        </>
+                                    ) : 'Submit'}
+                                </button>
                             </div>
                         </form>
                     </div>
