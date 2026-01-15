@@ -21,33 +21,25 @@ router.post('/', auth, [
             });
         }
 
-        const { name, request, category, isAnonymous, isUrgent } = req.body;
-        const storage = req.app.locals.storage;
+        const { title, name, request, category, isAnonymous, isUrgent } = req.body;
 
-        const prayerRequest = {
-            id: Date.now().toString(),
-            userId: req.user.id || req.user._id, // Must be authenticated
+        // Valid categories from the model
+        const validCategories = ['healing', 'family', 'finances', 'guidance', 'thanksgiving', 'other'];
+        const safeCategory = validCategories.includes(category) ? category : 'other';
+
+        // Create prayer request using Mongoose model (don't set _id manually)
+        const prayerRequest = new PrayerRequest({
+            userId: req.user._id,
             name: isAnonymous ? 'Anonymous' : (name || req.user.name),
+            title: title || 'Prayer Request',
             request,
-            category: category || 'other',
+            category: safeCategory,
             isAnonymous: isAnonymous || false,
             isUrgent: isUrgent || false,
-            prayerCount: 0,
-            prayedBy: [],
-            status: 'active',
-            visibility: 'private', // Always private
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
+            visibility: 'private'
+        });
 
-        // Use MongoDB if available, otherwise use in-memory storage
-        if (process.env.MONGODB_URI) {
-            const mongoRequest = new PrayerRequest(prayerRequest);
-            await mongoRequest.save();
-            prayerRequest.id = mongoRequest._id;
-        } else {
-            storage.prayers.push(prayerRequest);
-        }
+        await prayerRequest.save();
 
         res.status(201).json({
             success: true,
@@ -59,7 +51,7 @@ router.post('/', auth, [
         console.error('Prayer request creation error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: error.message || 'Server error'
         });
     }
 });

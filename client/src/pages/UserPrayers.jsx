@@ -10,7 +10,7 @@ const UserPrayers = () => {
     const [submitting, setSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
-        title: '', request: '', category: 'personal', isAnonymous: false, isUrgent: false
+        title: '', request: '', category: 'other', isAnonymous: false, isUrgent: false
     });
 
     const [user] = useState(() => {

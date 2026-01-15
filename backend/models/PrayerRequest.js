@@ -12,6 +12,12 @@ const prayerRequestSchema = new mongoose.Schema({
         maxlength: [50, 'Name cannot exceed 50 characters'],
         default: 'Anonymous'
     },
+    title: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'Title cannot exceed 100 characters'],
+        default: 'Prayer Request'
+    },
     request: {
         type: String,
         required: [true, 'Prayer request is required'],
