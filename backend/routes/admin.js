@@ -59,6 +59,59 @@ router.get('/dashboard', adminAuth, async (req, res) => {
     }
 });
 
+// Prayer Management
+// @route   GET /api/admin/prayers
+// @desc    Get all prayer requests (admin view)
+// @access  Admin
+router.get('/prayers', adminAuth, async (req, res) => {
+    try {
+        const prayers = await PrayerRequest.find().sort({ createdAt: -1 });
+        res.json({ success: true, prayers });
+    } catch (error) {
+        console.error('Error fetching prayers:', error);
+        res.status(500).json({ success: false, message: 'Error fetching prayers' });
+    }
+});
+
+// @route   PATCH /api/admin/prayers/:id/approve
+// @desc    Toggle prayer approval status (active/closed)
+// @access  Admin
+router.patch('/prayers/:id/approve', adminAuth, async (req, res) => {
+    try {
+        const prayer = await PrayerRequest.findById(req.params.id);
+        if (!prayer) {
+            return res.status(404).json({ success: false, message: 'Prayer not found' });
+        }
+
+        // Toggle status or set to active if pending (assuming 'active' means approved)
+        // If current status is 'active', maybe we don't toggle back?
+        // Let's assume the button is "Approve" so it sets to 'active'.
+        prayer.status = 'active';
+        await prayer.save();
+
+        res.json({ success: true, prayer });
+    } catch (error) {
+        console.error('Error approving prayer:', error);
+        res.status(500).json({ success: false, message: 'Error approving prayer' });
+    }
+});
+
+// @route   DELETE /api/admin/prayers/:id
+// @desc    Delete a prayer request
+// @access  Admin
+router.delete('/prayers/:id', adminAuth, async (req, res) => {
+    try {
+        const prayer = await PrayerRequest.findByIdAndDelete(req.params.id);
+        if (!prayer) {
+            return res.status(404).json({ success: false, message: 'Prayer not found' });
+        }
+        res.json({ success: true, message: 'Prayer request deleted' });
+    } catch (error) {
+        console.error('Error deleting prayer:', error);
+        res.status(500).json({ success: false, message: 'Error deleting prayer' });
+    }
+});
+
 // Sermon Management
 // @route   GET /api/admin/sermons
 // @desc    Get all sermons (admin view)
@@ -103,7 +156,8 @@ router.post('/sermons', adminAuth, upload.fields([
             videoLink: finalVideoLink, // Model uses 'videoLink'
             audioUrl,
             thumbnailUrl: finalThumbnailUrl,
-            publishedBy: req.user.userId // Model uses 'publishedBy'
+            publishedBy: req.user._id, // Model uses 'publishedBy'
+            isPublished: true // Ensure it appears on public page
         });
 
         await newSermon.save();
@@ -228,7 +282,8 @@ router.post('/events', adminAuth, upload.fields([
             recurringDetails: isRecurring ? recurringDetails : null,
             imageUrl: finalImageUrl,
             videoUrl: finalVideoUrl,
-            createdBy: req.user.userId
+            createdBy: req.user._id,
+            isPublished: true // Ensure it appears on public page
         });
 
         await newEvent.save();

@@ -28,7 +28,7 @@ const AdminEvents = () => {
 
     const fetchEvents = async () => {
         try {
-            const response = await api.get('/events');
+            const response = await api.get('/admin/events');
             setEvents(response.data.events || []);
             setLoading(false);
         } catch (error) {
@@ -38,7 +38,6 @@ const AdminEvents = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Delete this event?')) return;
         try {
             await api.delete(`/admin/events/${id}`);
             fetchEvents();
@@ -190,6 +189,8 @@ const AdminEvents = () => {
                                         <option value="worship">Worship</option>
                                         <option value="prayer">Prayer</option>
                                         <option value="seminar">Seminar</option>
+                                        <option value="service">Service</option>
+                                        <option value="tongues fest">Tongues Fest</option>
                                     </select>
                                 </div>
                             </div>

@@ -3,12 +3,14 @@
 
 const sendEmail = async (options) => {
     // In development, just log the email to console
-    console.log('--- Email ---');
-    console.log('To:', options.email);
-    console.log('Subject:', options.subject);
-    console.log('Message:', options.message);
-    console.log('------------');
-    
+    if (process.env.NODE_ENV === 'development') {
+        console.log('--- Email ---');
+        console.log('To:', options.email);
+        console.log('Subject:', options.subject);
+        console.log('Message:', options.message);
+        console.log('------------');
+    }
+
     return { success: true, message: 'Email logged to console (in development)' };
 };
 

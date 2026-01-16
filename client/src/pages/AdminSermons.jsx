@@ -20,7 +20,7 @@ const AdminSermons = () => {
 
     const fetchSermons = async () => {
         try {
-            const response = await api.get('/sermons');
+            const response = await api.get('/admin/sermons');
             setSermons(response.data.sermons || []);
             setLoading(false);
         } catch (error) {
@@ -30,7 +30,6 @@ const AdminSermons = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this sermon?')) return;
         try {
             await api.delete(`/admin/sermons/${id}`);
             fetchSermons();

@@ -13,14 +13,27 @@ const UserPrayers = () => {
         title: '', request: '', category: 'other', isAnonymous: false, isUrgent: false
     });
 
-    const [user] = useState(() => {
+    const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('user');
         return savedUser ? JSON.parse(savedUser) : { name: 'User', role: 'user' };
     });
 
     useEffect(() => {
         fetchMyPrayers();
+        fetchUserProfile();
     }, []);
+
+    const fetchUserProfile = async () => {
+        try {
+            // using /auth/me for consistency
+            const response = await api.get('/auth/me');
+            if (response.data && response.data.user) {
+                setUser(response.data.user);
+            }
+        } catch (error) {
+            console.error('Error fetching user profile', error);
+        }
+    };
 
     const fetchMyPrayers = async () => {
         try {

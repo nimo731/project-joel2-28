@@ -9,13 +9,14 @@ const UserMessages = () => {
     const [loading, setLoading] = useState(true);
     const [selectedMessage, setSelectedMessage] = useState(null);
 
-    const [user] = useState(() => {
+    const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('user');
         return savedUser ? JSON.parse(savedUser) : { name: 'User', role: 'user', id: '' };
     });
 
     useEffect(() => {
         fetchMessages();
+        fetchUserProfile();
 
         // Socket connection
         const socket = io('http://localhost:5001'); // Backend URL
@@ -29,6 +30,17 @@ const UserMessages = () => {
 
         return () => socket.disconnect();
     }, [user.id, user._id]);
+
+    const fetchUserProfile = async () => {
+        try {
+            const response = await api.get('/auth/me');
+            if (response.data && response.data.user) {
+                setUser(response.data.user);
+            }
+        } catch (error) {
+            console.error('Error fetching user profile', error);
+        }
+    };
 
     const fetchMessages = async () => {
         try {

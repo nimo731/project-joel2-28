@@ -18,8 +18,8 @@ const UserDashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 // Fetch user data if needed or rely on stored User
-                // const userRes = await api.get('/auth/me'); 
-                // setUser(userRes.data);
+                const userRes = await api.get('/auth/me');
+                setUser(userRes.data.user);
 
                 // Fetch Prayers (limit 3 for preview)
                 const prayersRes = await api.get('/prayers/my');

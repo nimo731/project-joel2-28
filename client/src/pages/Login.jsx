@@ -26,10 +26,10 @@ const Login = () => {
     const handleAutoFill = (type) => {
         if (type === 'admin') {
             setRole('admin');
-            setFormData({ email: 'admin@joel228.com', password: 'admin123' });
+            setFormData({ email: 'admin@joel228.com', password: 'Joel228@Admin2025' });
         } else {
             setRole('user');
-            setFormData({ email: 'testuser@example.com', password: 'password123' });
+            setFormData({ email: 'patiencekaranjah@gmail.com', password: 'makeit&shineo6' });
         }
     };
 

@@ -17,7 +17,7 @@ const Events = () => {
         if (filter === 'all') {
             setFilteredEvents(events);
         } else {
-            setFilteredEvents(events.filter(e => e.type === filter));
+            setFilteredEvents(events.filter(e => e.category === filter));
         }
     }, [events, filter]);
 
@@ -41,7 +41,7 @@ const Events = () => {
         if (type === 'time') return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    const categories = ['all', 'service', 'tongues fest', 'outreach', 'prayers'];
+    const categories = ['all', 'service', 'tongues fest', 'outreach', 'prayer', 'worship'];
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
@@ -99,7 +99,7 @@ const Events = () => {
                                 <div className="h-48 md:h-auto md:w-64 shrink-0 relative overflow-hidden">
                                     {event.imageUrl ? (
                                         <img
-                                            src={event.imageUrl}
+                                            src={event.imageUrl.startsWith('http') ? event.imageUrl : `http://localhost:5001${event.imageUrl}`}
                                             alt={event.title}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                         />
@@ -137,7 +137,10 @@ const Events = () => {
                                     </p>
 
                                     <div className="mt-auto">
-                                        <button className="inline-flex items-center px-6 py-2 bg-gray-100 hover:bg-zegen-red hover:text-white text-gray-700 font-semibold rounded-lg transition-colors duration-300">
+                                        <button
+                                            onClick={() => alert(`RSVP functionality for "${event.title}" will be available soon!`)}
+                                            className="inline-flex items-center px-6 py-2 bg-gray-100 hover:bg-zegen-red hover:text-white text-gray-700 font-semibold rounded-lg transition-colors duration-300"
+                                        >
                                             <FaTicketAlt className="mr-2" />
                                             RSVP / Details
                                         </button>

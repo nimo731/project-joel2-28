@@ -13,7 +13,7 @@ const AdminPrayers = () => {
 
     const fetchPrayers = async () => {
         try {
-            const response = await api.get('/prayers');
+            const response = await api.get('/admin/prayers');
             setPrayers(response.data.prayers || []);
             setLoading(false);
         } catch (error) {
@@ -33,9 +33,16 @@ const AdminPrayers = () => {
     };
 
     const handleApprove = async (id) => {
-        // Feature: toggle approval if backend supports it
-        // For now just console log or assume API endpoint
-        console.log('Approve', id);
+        try {
+            await api.patch(`/admin/prayers/${id}/approve`);
+            // Refresh list or update local state
+            setPrayers(prayers.map(p =>
+                p._id === id ? { ...p, status: 'active' } : p
+            ));
+            fetchPrayers(); // Refresh to ensure sync
+        } catch (error) {
+            console.error('Approval failed', error);
+        }
     };
 
     return (
