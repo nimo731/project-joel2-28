@@ -127,7 +127,9 @@ const UserProfile = () => {
     }
 
     const isAdmin = user.role === 'admin';
-    const backendUrl = 'http://localhost:5001';
+    // Get base URL from API_URL (remove /api/v1) or fallback to localhost
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1';
+    const backendUrl = apiUrl.replace('/api/v1', '');
 
     return (
         <DashboardLayout role={isAdmin ? "admin" : "user"} user={user}>
