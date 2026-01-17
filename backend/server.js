@@ -44,7 +44,6 @@ const prodOrigins = [
   'https://glittering-boba-2c96da.netlify.app',
   'https://joel2-28.netlify.app'
 ];
-];
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production'
     ? function (origin, callback) {
