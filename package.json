@@ -8,7 +8,7 @@
     "dev": "cd backend && npm run dev",
     "test": "cd backend && npm test",
     "install-all": "npm install && cd backend && npm install",
-    "build": "echo 'No build step required for this project'"
+    "build": "cd backend && npm install"
   },
   "keywords": [
     "prayer-group",
