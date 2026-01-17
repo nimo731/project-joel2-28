@@ -12,15 +12,13 @@ const logger = winston.createLogger({
         winston.format.colorize(),
         winston.format.simple()
       )
-    }),
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' })
+    })
   ]
 });
 
 // Create a stream object with a 'write' function that will be used by `morgan`
 logger.stream = {
-  write: function(message) {
+  write: function (message) {
     logger.info(message.trim());
   }
 };
