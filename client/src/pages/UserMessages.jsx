@@ -19,7 +19,7 @@ const UserMessages = () => {
     });
 
     useEffect(() => {
-        fetchMessages();
+        // fetchMessages(); // Driven by activeTab now
         fetchUserProfile();
         fetchAdminContact();
 
@@ -68,9 +68,31 @@ const UserMessages = () => {
         }
     };
 
+    const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'sent'
+
+    useEffect(() => {
+        if (activeTab === 'inbox') {
+            fetchMessages();
+        } else {
+            fetchSentMessages();
+        }
+    }, [activeTab]);
+
+    const fetchSentMessages = async () => {
+        setLoading(true);
+        try {
+            const response = await api.get('/messages/sent');
+            setMessages(response.data.messages || []);
+        } catch (error) {
+            console.error('Error fetching sent messages', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleRead = async (msg) => {
         setSelectedMessage(msg);
-        if (!msg.isRead) {
+        if (!msg.isRead && activeTab === 'inbox') { // Only mark inbox messages as read
             try {
                 await api.put(`/messages/${msg._id}/read`);
                 setMessages(messages.map(m => m._id === msg._id ? { ...m, isRead: true } : m));
@@ -93,6 +115,24 @@ const UserMessages = () => {
                 </button>
             </div>
 
+            {/* Tabs */}
+            <div className="flex gap-4 border-b border-gray-200 mb-6">
+                <button
+                    onClick={() => { setActiveTab('inbox'); setSelectedMessage(null); }}
+                    className={`pb-3 px-1 font-medium text-sm transition-colors relative ${activeTab === 'inbox' ? 'text-zegen-blue' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    Inbox
+                    {activeTab === 'inbox' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-zegen-blue"></div>}
+                </button>
+                <button
+                    onClick={() => { setActiveTab('sent'); setSelectedMessage(null); }}
+                    className={`pb-3 px-1 font-medium text-sm transition-colors relative ${activeTab === 'sent' ? 'text-zegen-blue' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    Sent
+                    {activeTab === 'sent' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-zegen-blue"></div>}
+                </button>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
                 {/* Message List */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-y-auto">
@@ -105,7 +145,11 @@ const UserMessages = () => {
                             className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${selectedMessage?._id === msg._id ? 'bg-blue-50 border-l-4 border-zegen-blue' : ''} ${!msg.isRead ? 'bg-white font-semibold' : 'bg-gray-50/50 text-gray-600'}`}
                         >
                             <div className="flex justify-between items-start mb-1">
-                                <span className="text-sm">{msg.sender?.name || 'Admin'}</span>
+                                <span className="text-sm">
+                                    {activeTab === 'inbox'
+                                        ? (msg.sender?.name || 'Admin')
+                                        : `To: ${msg.recipient?.name || 'Admin'}`}
+                                </span>
                                 <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleDateString()}</span>
                             </div>
                             <div className="text-sm truncate mb-1">{msg.subject}</div>
@@ -121,7 +165,12 @@ const UserMessages = () => {
                             <div className="border-b border-gray-100 pb-4 mb-4">
                                 <h2 className="text-xl font-bold text-gray-800 mb-2">{selectedMessage.subject}</h2>
                                 <div className="flex justify-between items-center text-sm text-gray-500">
-                                    <span>From: <span className="font-semibold text-gray-700">{selectedMessage.sender?.name}</span></span>
+                                    <span>
+                                        {activeTab === 'inbox' ? 'From: ' : 'To: '}
+                                        <span className="font-semibold text-gray-700">
+                                            {activeTab === 'inbox' ? (selectedMessage.sender?.name || 'Admin') : (selectedMessage.recipient?.name || 'Admin')}
+                                        </span>
+                                    </span>
                                     <span>{new Date(selectedMessage.createdAt).toLocaleString()}</span>
                                 </div>
                             </div>
@@ -129,12 +178,14 @@ const UserMessages = () => {
                                 {selectedMessage.content}
                             </div>
                             <div className="mt-6 pt-4 border-t border-gray-100">
-                                <button
-                                    onClick={() => setIsComposeOpen(true)}
-                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
-                                >
-                                    <FaEnvelopeOpen /> Reply
-                                </button>
+                                {activeTab === 'inbox' && (
+                                    <button
+                                        onClick={() => setIsComposeOpen(true)}
+                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+                                    >
+                                        <FaEnvelopeOpen /> Reply
+                                    </button>
+                                )}
                             </div>
                         </>
                     ) : (
@@ -152,8 +203,9 @@ const UserMessages = () => {
                     onClose={() => setIsComposeOpen(false)}
                     recipient={adminContact}
                     onSendSuccess={() => {
-                        // Ideally we check sent messages, but for now just close
                         alert('Message sent to Admin!');
+                        setActiveTab('sent');
+                        fetchSentMessages();
                     }}
                 />
             )}
