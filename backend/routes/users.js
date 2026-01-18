@@ -84,4 +84,20 @@ router.post('/profile/photo', auth, upload.single('profileImage'), async (req, r
     }
 });
 
+// @route   GET /api/users/admin-contact
+// @desc    Get admin contact details
+// @access  Private
+router.get('/admin-contact', auth, async (req, res) => {
+    try {
+        const admin = await User.findOne({ role: 'admin' }).select('name email _id');
+        if (!admin) {
+            return res.status(404).json({ success: false, message: 'Admin not found' });
+        }
+        res.json({ success: true, admin });
+    } catch (error) {
+        console.error('Fetch admin error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 module.exports = router;

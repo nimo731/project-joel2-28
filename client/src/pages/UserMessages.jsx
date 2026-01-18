@@ -4,10 +4,14 @@ import DashboardLayout from '../components/DashboardLayout';
 import { FaEnvelope, FaEnvelopeOpen } from 'react-icons/fa';
 import io from 'socket.io-client';
 
+import ComposeMessage from '../components/ComposeMessage';
+
 const UserMessages = () => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedMessage, setSelectedMessage] = useState(null);
+    const [isComposeOpen, setIsComposeOpen] = useState(false);
+    const [adminContact, setAdminContact] = useState(null);
 
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('user');
@@ -17,19 +21,30 @@ const UserMessages = () => {
     useEffect(() => {
         fetchMessages();
         fetchUserProfile();
+        fetchAdminContact();
 
         // Socket connection
-        const socket = io('http://localhost:5001'); // Backend URL
-        socket.emit('join_user', user.id || user._id); // Assuming user object has id
+        const socket = io(import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api/v1', '') : 'http://localhost:5001');
+        socket.emit('join_user', user.id || user._id);
 
         socket.on('new_message', (data) => {
-            // Add new message to top of list
             setMessages(prev => [data.message, ...prev]);
-            alert(`New message from ${data.senderName || 'Admin'}`);
+            // alert(`New message from ${data.senderName || 'Admin'}`);
         });
 
         return () => socket.disconnect();
     }, [user.id, user._id]);
+
+    const fetchAdminContact = async () => {
+        try {
+            const response = await api.get('/users/admin-contact');
+            if (response.data.success) {
+                setAdminContact(response.data.admin);
+            }
+        } catch (error) {
+            console.error('Failed to fetch admin contact', error);
+        }
+    };
 
     const fetchUserProfile = async () => {
         try {
@@ -44,15 +59,11 @@ const UserMessages = () => {
 
     const fetchMessages = async () => {
         try {
-            const response = await api.get('/messages'); // Assuming GET /messages returns received messages
+            const response = await api.get('/messages');
             setMessages(response.data.messages || []);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching messages', error);
-            // Fallback
-            setMessages([
-                { _id: 1, subject: 'Welcome to Joel 2:28', content: 'We are so glad to have you join our community.', sender: { name: 'Admin Team' }, createdAt: new Date().toISOString(), isRead: false }
-            ]);
             setLoading(false);
         }
     };
@@ -71,7 +82,16 @@ const UserMessages = () => {
 
     return (
         <DashboardLayout role="user" user={user}>
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Messages</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">Messages</h1>
+                <button
+                    onClick={() => setIsComposeOpen(true)}
+                    disabled={!adminContact}
+                    className="bg-zegen-red text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition w-fit flex items-center gap-2"
+                >
+                    <FaEnvelope /> Contact Admin
+                </button>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
                 {/* Message List */}
@@ -109,8 +129,11 @@ const UserMessages = () => {
                                 {selectedMessage.content}
                             </div>
                             <div className="mt-6 pt-4 border-t border-gray-100">
-                                <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors">
-                                    Reply
+                                <button
+                                    onClick={() => setIsComposeOpen(true)}
+                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+                                >
+                                    <FaEnvelopeOpen /> Reply
                                 </button>
                             </div>
                         </>
@@ -122,6 +145,18 @@ const UserMessages = () => {
                     )}
                 </div>
             </div>
+
+            {adminContact && (
+                <ComposeMessage
+                    isOpen={isComposeOpen}
+                    onClose={() => setIsComposeOpen(false)}
+                    recipient={adminContact}
+                    onSendSuccess={() => {
+                        // Ideally we check sent messages, but for now just close
+                        alert('Message sent to Admin!');
+                    }}
+                />
+            )}
         </DashboardLayout>
     );
 };

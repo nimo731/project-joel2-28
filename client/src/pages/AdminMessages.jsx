@@ -3,9 +3,12 @@ import api from '../services/api';
 import DashboardLayout from '../components/DashboardLayout';
 import { FaEnvelope, FaReply, FaTrash } from 'react-icons/fa';
 
+import ComposeMessage from '../components/ComposeMessage';
+
 const AdminMessages = () => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [replyRecipient, setReplyRecipient] = useState(null);
 
     useEffect(() => {
         fetchMessages();
@@ -25,11 +28,15 @@ const AdminMessages = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this message?')) return;
         try {
-            await api.delete(`/admin/messages/${id}`); // Assuming admin delete route exists
+            await api.delete(`/messages/${id}`); // Correct route is /messages/:id, admin can delete
             fetchMessages();
         } catch (error) {
             console.error('Delete failed', error);
         }
+    };
+
+    const handleReply = (msg) => {
+        setReplyRecipient(msg.sender);
     };
 
     return (
@@ -57,13 +64,28 @@ const AdminMessages = () => {
                                 <p className="text-xs text-gray-500 truncate">{msg.content}</p>
                             </div>
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="p-2 text-gray-400 hover:text-blue-600"><FaReply /></button>
-                                <button onClick={() => handleDelete(msg._id)} className="p-2 text-gray-400 hover:text-red-600"><FaTrash /></button>
+                                <button onClick={() => handleReply(msg)} className="p-2 text-gray-400 hover:text-blue-600" title="Reply">
+                                    <FaReply />
+                                </button>
+                                <button onClick={() => handleDelete(msg._id)} className="p-2 text-gray-400 hover:text-red-600" title="Delete">
+                                    <FaTrash />
+                                </button>
                             </div>
                         </div>
                     ))
                 )}
             </div>
+
+            {replyRecipient && (
+                <ComposeMessage
+                    isOpen={!!replyRecipient}
+                    onClose={() => setReplyRecipient(null)}
+                    recipient={replyRecipient}
+                    onSendSuccess={() => {
+                        alert(`Reply sent to ${replyRecipient.name}`);
+                    }}
+                />
+            )}
         </DashboardLayout>
     );
 };
