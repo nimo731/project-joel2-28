@@ -45,7 +45,13 @@ const Login = () => {
 
             if (response.data.success || response.data.status === 'success') {
                 const token = response.data.token || response.data.data?.token;
-                const user = response.data.user || response.data.data?.user;
+                // Admin login returns user in data.data.user, regular login in data.user
+                const user = response.data.data?.user || response.data.user;
+
+                if (!token || !user) {
+                    setError('Login response missing required data');
+                    return;
+                }
 
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
@@ -56,6 +62,8 @@ const Login = () => {
                 } else {
                     navigate('/userdashboard');
                 }
+            } else {
+                setError('Login failed. Please try again.');
             }
         } catch (err) {
             console.error('Login error:', err);
