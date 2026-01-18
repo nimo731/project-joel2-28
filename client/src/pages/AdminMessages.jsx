@@ -85,11 +85,11 @@ const AdminMessages = () => {
                                 <div className="text-sm font-medium text-gray-800 truncate">{msg.subject}</div>
                                 <p className="text-xs text-gray-500 truncate">{msg.content}</p>
                             </div>
-                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => handleReply(msg)} className="p-2 text-gray-400 hover:text-blue-600" title="Reply">
+                            <div className="flex gap-2">
+                                <button onClick={() => handleReply(msg)} className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors" title="Reply">
                                     <FaReply />
                                 </button>
-                                <button onClick={() => handleDelete(msg._id)} className="p-2 text-gray-400 hover:text-red-600" title="Delete">
+                                <button onClick={() => handleDelete(msg._id)} className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors" title="Delete">
                                     <FaTrash />
                                 </button>
                             </div>
