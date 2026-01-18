@@ -100,4 +100,21 @@ router.get('/admin-contact', auth, async (req, res) => {
     }
 });
 
+// @route   POST /api/users/find
+// @desc    Find user by email (Admin only ideally, but kept simple)
+// @access  Private
+router.post('/find', auth, async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email }).select('name email _id');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        res.json({ success: true, user });
+    } catch (error) {
+        console.error('Find user error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 module.exports = router;
