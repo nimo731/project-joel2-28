@@ -88,8 +88,17 @@ router.post('/profile/photo', auth, upload.single('profileImage'), async (req, r
             imagePath = `/uploads/${req.file.filename}`;
         }
 
+        // If we still don't have a path, check if it's in a buffer (memoryStorage)
+        if (!imagePath && req.file.buffer) {
+            console.log('⚠️ File is in memory buffer only - likely Cloudinary setup issue or fallback active');
+            return res.status(500).json({
+                success: false,
+                message: 'Server is running in restricted mode. Cloudinary (persistent storage) is not currently active.'
+            });
+        }
+
         if (!imagePath) {
-            console.error('❌ Could not determine image path');
+            console.error('❌ Could not determine image path. File object keys:', Object.keys(req.file));
             return res.status(500).json({ success: false, message: 'Failed to process uploaded file' });
         }
 
