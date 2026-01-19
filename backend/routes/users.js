@@ -91,9 +91,16 @@ router.post('/profile/photo', auth, upload.single('profileImage'), async (req, r
         // If we still don't have a path, check if it's in a buffer (memoryStorage)
         if (!imagePath && req.file.buffer) {
             console.log('⚠️ File is in memory buffer only - likely Cloudinary setup issue or fallback active');
+
+            // Helpful hint discoverable via logs
+            let hint = '';
+            if (process.env.CLOUDINARY_APT_KEY || process.env.CLOUDINARY_APT_SECRET) {
+                hint = ' Hint: Detected "APT" instead of "API" in Render names.';
+            }
+
             return res.status(500).json({
                 success: false,
-                message: 'Server is running in restricted mode. Cloudinary (persistent storage) is not currently active.'
+                message: `Server is running in restricted mode. Cloudinary (persistent storage) is not currently active.${hint}`
             });
         }
 

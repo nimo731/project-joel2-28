@@ -5,19 +5,28 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config(); // Load from root .env if exists
-require('dotenv').config({ path: path.join(__dirname, '.env') }); // Also load from backend/.env
-
-// Environment Diagnostics (Safe logging)
-const MONGODB_URI = process.env.MONGODB_URI?.trim();
-const JWT_SECRET = process.env.JWT_SECRET?.trim();
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+// Environment Diagnostics & Normalization
+const normalizeEnv = () => {
+  const keys = [
+    'MONGODB_URI', 'JWT_SECRET', 'JWT_ADMIN_SECRET',
+    'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'
+  ];
+  keys.forEach(key => {
+    if (process.env[key]) {
+      process.env[key] = process.env[key].trim();
+    }
+  });
+};
+normalizeEnv();
 
 console.log('--- Environment Initialization ---');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PORT:', process.env.PORT);
-console.log('MONGODB_URI detected:', !!MONGODB_URI);
-console.log('JWT_SECRET detected:', !!JWT_SECRET);
-console.log('CLOUDINARY_CLOUD_NAME:', CLOUDINARY_CLOUD_NAME ? '✅ detected' : '❌ missing');
+console.log('MONGODB_URI detected:', !!process.env.MONGODB_URI);
+console.log('JWT_SECRET detected:', !!process.env.JWT_SECRET);
+console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ detected' : '❌ missing');
+console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '✅ detected' : '❌ missing');
+console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '✅ detected' : '❌ missing');
 console.log('---------------------------------');
 
 const app = express();
@@ -82,8 +91,8 @@ const inMemoryStorage = {
 };
 
 // Database connection
-if (MONGODB_URI) {
-  mongoose.connect(MONGODB_URI)
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('🔥 Connected to MongoDB - THE JOEL 2:28 GENERATION'))
     .catch(err => {
       console.error('❌ MongoDB connection error:', err.message);
