@@ -24,11 +24,13 @@ const Navbar = () => {
                 <div className="container mx-auto px-4 flex justify-between items-center">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2">
-                        <img
-                            src={logo}
-                            alt="Joel 2:28 Generation"
-                            className="h-16 w-16 md:h-16 object-contain rounded-full border-2 border-white/30 hover:border-zegen-red hover:scale-105 transition-all duration-300"
-                        />
+                        <div className="h-14 w-14 md:h-16 md:w-16 rounded-full border-2 border-white/30 hover:border-zegen-red hover:scale-105 transition-all duration-300 bg-black p-2 overflow-hidden">
+                            <img
+                                src="/joel228-logo.png"
+                                alt="Joel 2:28 Generation"
+                                className="h-full w-full object-contain"
+                            />
+                        </div>
                     </Link>
 
                     {/* Desktop Menu */}

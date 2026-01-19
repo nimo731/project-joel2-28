@@ -66,7 +66,11 @@ const DashboardLayout = ({ children, role = 'user', user: propUser = null }) => 
 
                 <div className="p-6">
                     <div className="flex items-center mb-8">
-                        {user.profileImage ? (
+                        {role === 'admin' && !user.profileImage ? (
+                            <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shadow-md border-2 border-white/20 bg-black p-1.5">
+                                <img src="/joel228-logo.png" alt="Admin" className="w-full h-full object-contain" />
+                            </div>
+                        ) : user.profileImage ? (
                             <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shadow-md border-2 border-white/20">
                                 <img
                                     src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5001'}${user.profileImage}`}
@@ -74,13 +78,16 @@ const DashboardLayout = ({ children, role = 'user', user: propUser = null }) => 
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = '/joel228-logo.png';
+                                        if (role === 'admin') {
+                                            e.target.src = '/joel228-logo.png';
+                                            e.target.className = 'w-full h-full object-contain p-1';
+                                        }
                                     }}
                                 />
                             </div>
                         ) : (
-                            <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shadow-md border-2 border-white/20 bg-black p-1">
-                                <img src="/joel228-logo.png" alt="Joel 2:28" className="w-full h-full object-contain" />
+                            <div className="w-10 h-10 rounded-full bg-zegen-red flex items-center justify-center text-lg font-bold mr-3 shadow-md">
+                                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                             </div>
                         )}
                         <div className="overflow-hidden">

@@ -145,7 +145,11 @@ const UserProfile = () => {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                     <div className="flex flex-col items-center justify-center mb-8">
                         <div className="relative mb-2">
-                            {user.profileImage ? (
+                            {isAdmin ? (
+                                <div className="h-24 w-24 rounded-full border-4 border-zegen-red/20 overflow-hidden bg-black p-3">
+                                    <img src="/joel228-logo.png" alt="Admin" className="h-full w-full object-contain" />
+                                </div>
+                            ) : user.profileImage ? (
                                 <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 overflow-hidden bg-gray-50">
                                     <img
                                         src={user.profileImage.startsWith('http') ? user.profileImage : `${backendUrl}${user.profileImage}`}
@@ -153,36 +157,37 @@ const UserProfile = () => {
                                         className="h-full w-full object-cover"
                                         onError={(e) => {
                                             e.target.onerror = null;
-                                            e.target.src = '/joel228-logo.png';
-                                            e.target.className = 'h-full w-full object-contain p-2';
+                                            e.target.parentElement.innerHTML = `<div class="h-full w-full bg-zegen-red flex items-center justify-center text-4xl font-bold text-white">${user.name ? user.name.charAt(0).toUpperCase() : 'U'}</div>`;
                                         }}
                                     />
                                 </div>
                             ) : (
-                                <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 overflow-hidden bg-black p-2">
-                                    <img src="/joel228-logo.png" alt="Joel 2:28" className="h-full w-full object-contain" />
+                                <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 bg-zegen-red flex items-center justify-center text-4xl font-bold text-white">
+                                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                                 </div>
                             )}
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handlePhotoUpload}
-                                accept="image/*"
-                                className="hidden"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={uploadingPhoto}
-                                className={`absolute bottom-0 right-0 bg-zegen-blue text-white p-2 rounded-full text-xs shadow-md border-2 border-white hover:bg-700 transition-colors ${uploadingPhoto ? 'opacity-50 cursor-wait' : ''}`}
-                            >
-                                {uploadingPhoto ? (
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                ) : (
-                                    <FaCamera className="text-sm" />
-                                )}
-                            </button>
-                        </div>
+                            {!isAdmin && (
+                                <>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handlePhotoUpload}
+                                        accept="image/*"
+                                        className="hidden"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={uploadingPhoto}
+                                        className={`absolute bottom-0 right-0 bg-zegen-blue text-white p-2 rounded-full text-xs shadow-md border-2 border-white hover:bg-700 transition-colors ${uploadingPhoto ? 'opacity-50 cursor-wait' : ''}`}
+                                    >
+                                        {uploadingPhoto ? (
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        ) : (
+                                            <FaCamera className="text-sm" />
+                                        )}
+                                    </button>
+                                </>\n                            )}\n                        </div>
                         {isAdmin && (
                             <span className="text-xs font-bold text-zegen-red uppercase tracking-wider bg-red-50 px-3 py-1 rounded-full">
                                 Official Admin Profile
