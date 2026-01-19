@@ -187,7 +187,9 @@ const UserProfile = () => {
                                             <FaCamera className="text-sm" />
                                         )}
                                     </button>
-                                </>\n                            )}\n                        </div>
+                                </>
+                            )}
+                        </div>
                         {isAdmin && (
                             <span className="text-xs font-bold text-zegen-red uppercase tracking-wider bg-red-50 px-3 py-1 rounded-full">
                                 Official Admin Profile
