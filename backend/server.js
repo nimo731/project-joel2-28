@@ -130,8 +130,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Root endpoint for simple health checks
+app.get('/', (req, res) => {
+  res.status(200).send('THE JOEL 2:28 GENERATION API IS LIVE 🚀');
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
+  console.error('--- GLOBAL ERROR HANDLER ---');
   console.error(err.stack);
   const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
@@ -143,6 +149,7 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
+  console.log(`404 - Not Found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
     message: 'API endpoint not found'
