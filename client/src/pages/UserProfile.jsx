@@ -23,6 +23,7 @@ const UserProfile = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState(null);
     const [message, setMessage] = useState({ type: '', text: '' });
     const fileInputRef = useRef(null);
 
@@ -72,6 +73,16 @@ const UserProfile = () => {
             return;
         }
 
+        // Create preview URL immediately
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const result = reader.result;
+            setPreviewUrl(result);
+            // Also update the user state so the sidebar shows the preview
+            setUser(prev => ({ ...prev, profileImage: result }));
+        };
+        reader.readAsDataURL(file);
+
         setUploadingPhoto(true);
         setMessage({ type: '', text: '' });
 
@@ -82,11 +93,21 @@ const UserProfile = () => {
             const response = await api.post('/users/profile/photo', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setUser(prev => ({ ...prev, profileImage: response.data.profileImage }));
-            setMessage({ type: 'success', text: 'Profile photo updated!' });
+
+            // Check if we got a valid URL back
+            const newImageUrl = response.data.profileImage;
+            if (newImageUrl && (newImageUrl.startsWith('http') || newImageUrl.startsWith('/'))) {
+                setUser(prev => ({ ...prev, profileImage: newImageUrl }));
+                setPreviewUrl(null); // Clear preview, use real URL
+                setMessage({ type: 'success', text: 'Profile photo updated!' });
+            } else {
+                // Invalid URL returned, keep preview
+                setMessage({ type: 'warning', text: 'Photo uploaded but may not persist. Please configure Cloudinary.' });
+            }
         } catch (error) {
             console.error('Photo upload failed:', error);
             setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to upload photo.' });
+            // Keep the preview even if upload failed
         } finally {
             setUploadingPhoto(false);
         }
@@ -149,10 +170,18 @@ const UserProfile = () => {
                                 <div className="h-24 w-24 rounded-full border-4 border-zegen-red/20 overflow-hidden bg-black p-3">
                                     <img src="/joel228-logo.png" alt="Admin" className="h-full w-full object-contain" />
                                 </div>
+                            ) : previewUrl ? (
+                                <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 overflow-hidden bg-gray-50">
+                                    <img
+                                        src={previewUrl}
+                                        alt="Preview"
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
                             ) : user.profileImage ? (
                                 <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 overflow-hidden bg-gray-50">
                                     <img
-                                        src={user.profileImage.startsWith('http') ? user.profileImage : `${backendUrl}${user.profileImage}`}
+                                        src={user.profileImage.startsWith('http') || user.profileImage.startsWith('data:') ? user.profileImage : `${backendUrl}${user.profileImage}`}
                                         alt="Profile"
                                         className="h-full w-full object-cover"
                                         onError={(e) => {

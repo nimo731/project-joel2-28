@@ -73,7 +73,7 @@ const DashboardLayout = ({ children, role = 'user', user: propUser = null }) => 
                         ) : user.profileImage ? (
                             <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shadow-md border-2 border-white/20">
                                 <img
-                                    src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5001'}${user.profileImage}`}
+                                    src={user.profileImage.startsWith('http') || user.profileImage.startsWith('data:') ? user.profileImage : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5001'}${user.profileImage}`}
                                     alt="Profile"
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
