@@ -4,7 +4,17 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+require('dotenv').config(); // Load from root .env if exists
+require('dotenv').config({ path: path.join(__dirname, '.env') }); // Also load from backend/.env
+
+// Environment Diagnostics (Safe logging)
+console.log('--- Environment Initialization ---');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('MONGODB_URI detected:', !!process.env.MONGODB_URI);
+console.log('JWT_SECRET detected:', !!process.env.JWT_SECRET);
+console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ detected' : '❌ missing');
+console.log('---------------------------------');
 
 const app = express();
 
@@ -30,49 +40,34 @@ app.use(helmet({
   crossOriginOpenerPolicy: false,
   crossOriginResourcePolicy: false
 }));
+
 // CORS configuration
-const devCors = (origin, callback) => callback(null, true);
 const prodOrigins = [
   'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'http://localhost:5000',
-  'http://127.0.0.1:5000',
-  'http://localhost:5001',
-  'http://127.0.0.1:5001',
   'http://localhost:5173',
-  'http://127.0.0.1:5173',
   'https://glittering-boba-2c96da.netlify.app',
   'https://joel2-28.netlify.app'
 ];
+
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production'
-    ? function (origin, callback) {
-      if (!origin || prodOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      callback(new Error('Not allowed by CORS'));
+  origin: function (origin, callback) {
+    if (!origin || prodOrigins.includes(origin)) {
+      return callback(null, true);
     }
-    : devCors,
+    callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'X-Requested-With'],
   credentials: true,
-  optionsSuccessStatus: 200 // For legacy browser support
+  optionsSuccessStatus: 200
 };
+
 app.use(cors(corsOptions));
-
-// Handle preflight requests
 app.options('*', cors(corsOptions));
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use(limiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // In-memory storage for development (replace with MongoDB for production)
 const inMemoryStorage = {
@@ -82,16 +77,16 @@ const inMemoryStorage = {
   prayerCounts: {}
 };
 
-// Database connection (optional for development)
+// Database connection
 if (process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('🔥 Connected to MongoDB - THE JOEL 2:28 GENERATION'))
-    .catch(err => console.error('❌ MongoDB connection error:', err));
+    .catch(err => {
+      console.error('❌ MongoDB connection error:', err.message);
+      console.log('⚠️ Falling back to in-memory storage due to connection failure');
+    });
 } else {
-  console.log('⚠️  Running with in-memory storage (set MONGODB_URI for production)');
+  console.log('⚠️ Running with in-memory storage (set MONGODB_URI for production)');
 }
 
 // Import routes

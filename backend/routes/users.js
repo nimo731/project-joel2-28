@@ -59,9 +59,20 @@ router.patch('/profile', auth, async (req, res) => {
 // @access  Private
 router.post('/profile/photo', auth, upload.single('profileImage'), async (req, res) => {
     try {
+        console.log('--- Profile Photo Upload ---');
+        console.log('User ID:', req.user._id);
+
         if (!req.file) {
+            console.log('❌ No file received');
             return res.status(400).json({ success: false, message: 'No image file provided' });
         }
+
+        console.log('File detected:', req.file.originalname);
+        console.log('File Storage Details:', {
+            path: req.file.path,
+            filename: req.file.filename,
+            mimetype: req.file.mimetype
+        });
 
         const user = await User.findById(req.user._id);
         if (!user) {
@@ -70,17 +81,36 @@ router.post('/profile/photo', auth, upload.single('profileImage'), async (req, r
 
         // Set the profile image URL
         // Cloudinary returns the full URL in req.file.path
-        user.profileImage = req.file.path || `/uploads/${req.file.filename}`;
+        // Fallback to local storage path if path is not a full URL
+        let imagePath = req.file.path;
+
+        if (!imagePath && req.file.filename) {
+            imagePath = `/uploads/${req.file.filename}`;
+        }
+
+        if (!imagePath) {
+            console.error('❌ Could not determine image path');
+            return res.status(500).json({ success: false, message: 'Failed to process uploaded file' });
+        }
+
+        user.profileImage = imagePath;
+        console.log('✅ Saving profileImage:', user.profileImage);
+
         await user.save();
 
         res.json({
             success: true,
             message: 'Profile photo updated successfully',
             profileImage: user.profileImage,
-            user
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                profileImage: user.profileImage
+            }
         });
     } catch (error) {
-        console.error('Profile photo upload error:', error);
+        console.error('❌ Profile photo upload error:', error);
         res.status(500).json({ success: false, message: error.message || 'Server error' });
     }
 });
