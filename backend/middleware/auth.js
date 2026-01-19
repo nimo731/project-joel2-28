@@ -14,7 +14,8 @@ const auth = async (req, res, next) => {
 
         // First try with the regular JWT secret
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'joel228generation_secret');
+            const secret = process.env.JWT_SECRET?.trim() || 'joel228generation_secret';
+            const decoded = jwt.verify(token, secret);
             const user = await User.findById(decoded.id || decoded.userId);
 
             if (!user || user.isActive === false) {
@@ -28,7 +29,8 @@ const auth = async (req, res, next) => {
         } catch (err) {
             // If first attempt fails, try with admin JWT secret
             try {
-                const decoded = jwt.verify(token, process.env.JWT_ADMIN_SECRET || 'joel228admin_secret');
+                const adminSecret = process.env.JWT_ADMIN_SECRET?.trim() || 'joel228admin_secret';
+                const decoded = jwt.verify(token, adminSecret);
                 const user = await User.findById(decoded.id || decoded.userId);
 
                 if (!user || user.isActive === false) {
