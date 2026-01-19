@@ -21,6 +21,16 @@ const normalizeEnv = () => {
       process.env[key] = val;
     }
   });
+
+  // POWER FIX: Automatically alias "APT" typos to "API"
+  if (process.env.CLOUDINARY_APT_KEY && !process.env.CLOUDINARY_API_KEY) {
+    process.env.CLOUDINARY_API_KEY = process.env.CLOUDINARY_APT_KEY;
+    console.log('🛠️ Auto-aliased CLOUDINARY_APT_KEY to CLOUDINARY_API_KEY');
+  }
+  if (process.env.CLOUDINARY_APT_SECRET && !process.env.CLOUDINARY_API_SECRET) {
+    process.env.CLOUDINARY_API_SECRET = process.env.CLOUDINARY_APT_SECRET;
+    console.log('🛠️ Auto-aliased CLOUDINARY_APT_SECRET to CLOUDINARY_API_SECRET');
+  }
 };
 normalizeEnv();
 
