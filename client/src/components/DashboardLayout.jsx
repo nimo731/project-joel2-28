@@ -66,22 +66,21 @@ const DashboardLayout = ({ children, role = 'user', user: propUser = null }) => 
 
                 <div className="p-6">
                     <div className="flex items-center mb-8">
-                        {/* Show logo for admin ONLY if no profile image is set, otherwise show profile image */}
-                        {role === 'admin' && !user.profileImage ? (
-                            <div className="w-12 h-12 rounded-full border-2 border-white/20 p-1 mr-3 bg-white/10 overflow-hidden">
-                                <img src={logo} alt="Admin Profile" className="w-full h-full object-contain" />
-                            </div>
-                        ) : user.profileImage ? (
+                        {user.profileImage ? (
                             <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shadow-md border-2 border-white/20">
                                 <img
                                     src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5001'}${user.profileImage}`}
                                     alt="Profile"
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '/joel228-logo.png';
+                                    }}
                                 />
                             </div>
                         ) : (
-                            <div className="w-10 h-10 rounded-full bg-zegen-red flex items-center justify-center text-lg font-bold mr-3 shadow-md">
-                                {user.name ? user.name.charAt(0).toUpperCase() : (role === 'admin' ? 'A' : 'U')}
+                            <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shadow-md border-2 border-white/20 bg-black p-1">
+                                <img src="/joel228-logo.png" alt="Joel 2:28" className="w-full h-full object-contain" />
                             </div>
                         )}
                         <div className="overflow-hidden">
