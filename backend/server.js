@@ -13,7 +13,12 @@ const normalizeEnv = () => {
   ];
   keys.forEach(key => {
     if (process.env[key]) {
-      process.env[key] = process.env[key].trim();
+      let val = process.env[key].trim();
+      // Specifically strip surrounding quotes if they exist
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.substring(1, val.length - 1).trim();
+      }
+      process.env[key] = val;
     }
   });
 };
@@ -23,7 +28,9 @@ console.log('--- Environment Initialization ---');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PORT:', process.env.PORT);
 console.log('MONGODB_URI detected:', !!process.env.MONGODB_URI);
-console.log('JWT_SECRET detected:', !!process.env.JWT_SECRET);
+if (process.env.MONGODB_URI) {
+  console.log('MONGODB_URI details: Length:', process.env.MONGODB_URI.length, '| Starts with:', process.env.MONGODB_URI.substring(0, 15));
+}
 console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ detected' : '❌ missing');
 console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '✅ detected' : '❌ missing');
 console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '✅ detected' : '❌ missing');
