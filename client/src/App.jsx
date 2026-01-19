@@ -10,6 +10,8 @@ import Contact from './pages/Contact';
 import Testimonials from './pages/Testimonials';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Admin from './pages/Admin';
 import AdminSermons from './pages/AdminSermons';
 import AdminEvents from './pages/AdminEvents';
@@ -38,6 +40,8 @@ function App() {
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
 
             {/* User Dashboard */}
             <Route path="/userdashboard/*" element={<UserDashboard />} />

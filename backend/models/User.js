@@ -37,6 +37,8 @@ const userSchema = new mongoose.Schema({
         default: 'guest',
         required: true
     },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     isActive: {
         type: Boolean,
         default: true
@@ -153,6 +155,20 @@ userSchema.methods.createAdminPasswordResetToken = function () {
         .digest('hex');
 
     this.adminPasswordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    return resetToken;
+};
+
+// Create user password reset token
+userSchema.methods.createPasswordResetToken = function () {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    this.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    this.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     return resetToken;
 };

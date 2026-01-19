@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
-import { FaSave, FaUserCircle, FaCamera } from 'react-icons/fa';
+import { FaSave, FaUserCircle, FaCamera, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import api from '../services/api';
 import logo from '../assets/logo.png';
 
@@ -25,6 +25,16 @@ const UserProfile = () => {
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [showPasswords, setShowPasswords] = useState({
+        current: false,
+        new: false
+    });
+    const [changingPassword, setChangingPassword] = useState(false);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -137,6 +147,28 @@ const UserProfile = () => {
         }
     };
 
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            return setMessage({ type: 'error', text: 'New passwords do not match.' });
+        }
+        setChangingPassword(true);
+        setMessage({ type: '', text: '' });
+        try {
+            await api.patch('/users/profile/password', {
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
+            setMessage({ type: 'success', text: 'Password updated successfully!' });
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } catch (error) {
+            console.error('Password update failed:', error);
+            setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update password.' });
+        } finally {
+            setChangingPassword(false);
+        }
+    };
+
     if (loading) {
         return (
             <DashboardLayout role="user">
@@ -230,6 +262,7 @@ const UserProfile = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* ... existing fields ... */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
@@ -289,6 +322,75 @@ const UserProfile = () => {
                             </button>
                         </div>
                     </form>
+
+                    {/* Change Password Section */}
+                    <div className="mt-12 pt-8 border-t border-gray-200">
+                        <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <FaLock className="text-zegen-red" /> Change Password
+                        </h2>
+                        <form onSubmit={handlePasswordChange} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPasswords.current ? "text" : "password"}
+                                        value={passwordData.currentPassword}
+                                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                                        required
+                                        className="w-full border rounded-lg p-3 pr-12 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none border-gray-200"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                                        className="absolute right-3 top-3 text-gray-400"
+                                    >
+                                        {showPasswords.current ? <FaEyeSlash /> : <FaEye />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPasswords.new ? "text" : "password"}
+                                            value={passwordData.newPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                            required
+                                            minLength="6"
+                                            className="w-full border rounded-lg p-3 pr-12 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none border-gray-200"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                                            className="absolute right-3 top-3 text-gray-400"
+                                        >
+                                            {showPasswords.new ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        value={passwordData.confirmPassword}
+                                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                                        required
+                                        className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-zegen-blue outline-none border-gray-200"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={changingPassword}
+                                    className={`bg-zegen-blue hover:bg-[#233555] text-white px-8 py-3 rounded-lg font-bold shadow-lg transition-all ${changingPassword ? 'opacity-70 cursor-wait' : ''}`}
+                                >
+                                    {changingPassword ? 'Updating...' : 'Update Password'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </DashboardLayout >

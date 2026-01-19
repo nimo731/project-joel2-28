@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
@@ -235,6 +236,94 @@ router.post('/logout', auth, (req, res) => {
         success: true,
         message: 'Logged out successfully'
     });
+});
+
+// @route   POST /api/auth/forgot-password
+// @desc    Forgot password - generate reset token
+// @access  Public
+router.post('/forgot-password', [
+    body('email').isEmail().withMessage('Please enter a valid email')
+], async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            // Return success even if user not found for security (prevent email enumeration)
+            return res.json({
+                success: true,
+                message: 'If an account exists with that email, a reset token has been generated.'
+            });
+        }
+
+        // Create reset token
+        const resetToken = user.createPasswordResetToken();
+        await user.save({ validateBeforeSave: false });
+
+        // In a real app, send email here. For now, log it and return for demo.
+        console.log('--- PASSWORD RESET TOKEN ---');
+        console.log(`User: ${email}`);
+        console.log(`Token: ${resetToken}`);
+        console.log('---------------------------');
+
+        res.json({
+            success: true,
+            message: 'Password reset token generated.',
+            // Only return token in response for development/demo purposes
+            demoToken: process.env.NODE_ENV === 'development' ? resetToken : undefined
+        });
+
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during password reset request'
+        });
+    }
+});
+
+// @route   POST /api/auth/reset-password/:token
+// @desc    Reset password using token
+// @access  Public
+router.post('/reset-password/:token', [
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+], async (req, res) => {
+    try {
+        const resetPasswordToken = crypto
+            .createHash('sha256')
+            .update(req.params.token)
+            .digest('hex');
+
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token is invalid or has expired'
+            });
+        }
+
+        // Set new password
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Password reset successful. Please login with your new password.'
+        });
+
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during password reset'
+        });
+    }
 });
 
 module.exports = router;

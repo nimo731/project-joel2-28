@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { FaUserPlus, FaArrowRight, FaMapMarkerAlt, FaFacebookF, FaTwitter, FaInstagram, FaYoutube } from 'react-icons/fa';
+import { FaUserPlus, FaArrowRight, FaMapMarkerAlt, FaFacebookF, FaTwitter, FaInstagram, FaYoutube, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const SignUp = () => {
     const [formData, setFormData] = useState({
@@ -12,6 +12,7 @@ const SignUp = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -110,16 +111,25 @@ const SignUp = () => {
 
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                minLength="6"
-                                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-zegen-blue focus:ring-1 focus:ring-zegen-blue transition-colors"
-                                placeholder="••••••••"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    minLength="6"
+                                    className="w-full border border-gray-300 rounded-lg p-3 pr-12 focus:outline-none focus:border-zegen-blue focus:ring-1 focus:ring-zegen-blue transition-colors"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </button>
+                            </div>
                         </div>
 
                         <button

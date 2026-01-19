@@ -54,6 +54,33 @@ router.patch('/profile', auth, async (req, res) => {
     }
 });
 
+// @route   PATCH /api/users/profile/password
+// @desc    Update user password
+// @access  Private
+router.patch('/profile/password', auth, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Password update error:', error);
+        res.status(500).json({ success: false, message: 'Server error during password update' });
+    }
+});
+
 // @route   POST /api/users/profile/photo
 // @desc    Upload profile photo
 // @access  Private

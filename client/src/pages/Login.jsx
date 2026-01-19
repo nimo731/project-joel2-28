@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { FaLock, FaUser, FaShieldAlt, FaSignInAlt, FaMagic } from 'react-icons/fa';
+import { FaLock, FaUser, FaShieldAlt, FaSignInAlt, FaMagic, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
     const [role, setRole] = useState('user'); // 'user' or 'admin'
@@ -11,6 +11,7 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -167,18 +168,30 @@ const Login = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="block text-sm font-semibold text-gray-700">Password</label>
+                                <Link to="/forgot-password" size="sm" className="text-xs font-bold text-zegen-blue hover:underline">
+                                    Forgot password?
+                                </Link>
+                            </div>
                             <div className="relative">
                                 <FaLock className="absolute left-3 top-3.5 text-gray-400" />
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     name="password"
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-zegen-blue focus:ring-1 focus:ring-zegen-blue transition-colors"
+                                    className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-zegen-blue focus:ring-1 focus:ring-zegen-blue transition-colors"
                                     placeholder="Enter your password"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </button>
                             </div>
                         </div>
 
