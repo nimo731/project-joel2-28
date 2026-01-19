@@ -90,7 +90,11 @@ router.post('/profile/photo', auth, upload.single('profileImage'), async (req, r
 
         // If we still don't have a path, check if it's in a buffer (memoryStorage)
         if (!imagePath && req.file.buffer) {
-            console.log('⚠️ File is in memory buffer only - likely Cloudinary setup issue or fallback active');
+            console.log('--- CLOUDINARY BYPASS DETECTED ---');
+            console.log('File structure keys:', Object.keys(req.file));
+            console.log('Cloud Name exists:', !!process.env.CLOUDINARY_CLOUD_NAME);
+            console.log('API Key exists:', !!process.env.CLOUDINARY_API_KEY);
+            console.log('API Secret exists:', !!process.env.CLOUDINARY_API_SECRET);
 
             // Helpful hint discoverable via logs
             let hint = '';

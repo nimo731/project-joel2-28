@@ -7,14 +7,10 @@ const path = require('path');
 require('dotenv').config(); // Load from root .env if exists
 // Environment Diagnostics & Normalization
 const normalizeEnv = () => {
-  const keys = [
-    'MONGODB_URI', 'JWT_SECRET', 'JWT_ADMIN_SECRET',
-    'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'
-  ];
-  keys.forEach(key => {
-    if (process.env[key]) {
+  // Trim everything that looks like a ministry config
+  Object.keys(process.env).forEach(key => {
+    if (key.includes('CLOUDINARY') || key.includes('MONGO') || key.includes('JWT')) {
       let val = process.env[key].trim();
-      // Specifically strip surrounding quotes if they exist
       if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
         val = val.substring(1, val.length - 1).trim();
       }
@@ -22,25 +18,20 @@ const normalizeEnv = () => {
     }
   });
 
-  // POWER FIX: Automatically alias "APT" typos to "API"
+  // POWER FIX: Automatically alias typos
   if (process.env.CLOUDINARY_APT_KEY && !process.env.CLOUDINARY_API_KEY) {
     process.env.CLOUDINARY_API_KEY = process.env.CLOUDINARY_APT_KEY;
-    console.log('🛠️ Auto-aliased CLOUDINARY_APT_KEY to CLOUDINARY_API_KEY');
   }
   if (process.env.CLOUDINARY_APT_SECRET && !process.env.CLOUDINARY_API_SECRET) {
     process.env.CLOUDINARY_API_SECRET = process.env.CLOUDINARY_APT_SECRET;
-    console.log('🛠️ Auto-aliased CLOUDINARY_APT_SECRET to CLOUDINARY_API_SECRET');
   }
 };
 normalizeEnv();
 
 console.log('--- Environment Initialization ---');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('PORT:', process.env.PORT);
-console.log('MONGODB_URI detected:', !!process.env.MONGODB_URI);
-console.log('JWT_SECRET detected:', !!process.env.JWT_SECRET);
-console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ detected' : '❌ missing');
+console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? `✅ (${process.env.CLOUDINARY_CLOUD_NAME.length} chars)` : '❌ missing');
 console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '✅ detected' : '❌ missing');
+if (process.env.CLOUDINARY_APT_KEY) console.log('CLOUDINARY_APT_KEY: ✅ detected (will be aliased)');
 console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '✅ detected' : '❌ missing');
 console.log('---------------------------------');
 
