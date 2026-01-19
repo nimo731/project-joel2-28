@@ -152,7 +152,7 @@ const UserProfile = () => {
                             ) : user.profileImage ? (
                                 <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 overflow-hidden bg-gray-50">
                                     <img
-                                        src={`${backendUrl}${user.profileImage}`}
+                                        src={user.profileImage.startsWith('http') ? user.profileImage : `${backendUrl}${user.profileImage}`}
                                         alt="Profile"
                                         className="h-full w-full object-cover"
                                     />

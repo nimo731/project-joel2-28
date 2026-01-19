@@ -69,7 +69,8 @@ router.post('/profile/photo', auth, upload.single('profileImage'), async (req, r
         }
 
         // Set the profile image URL
-        user.profileImage = `/uploads/${req.file.filename}`;
+        // Cloudinary returns the full URL in req.file.path
+        user.profileImage = req.file.path || `/uploads/${req.file.filename}`;
         await user.save();
 
         res.json({
