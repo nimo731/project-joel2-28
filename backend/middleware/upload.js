@@ -13,11 +13,24 @@ const storage = {
             (process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_APT_KEY) &&
             (process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_APT_SECRET);
 
+        if (useCloudinary) {
+            console.log(`[UPLOAD] Starting Cloudinary upload for: ${file.originalname}`);
+        } else {
+            console.warn(`[UPLOAD] Cloudinary missing, falling back to MemoryStorage for: ${file.originalname}`);
+        }
+
         const realStorage = useCloudinary
             ? createCloudinaryStorage('uploads')
             : multer.memoryStorage();
 
-        realStorage._handleFile(req, file, cb);
+        realStorage._handleFile(req, file, (err, info) => {
+            if (err) {
+                console.error(`[UPLOAD ERROR] ${file.originalname}:`, err);
+            } else {
+                console.log(`[UPLOAD SUCCESS] ${file.originalname} -> ${info.path || 'memory'}`);
+            }
+            cb(err, info);
+        });
     },
     _removeFile: (req, file, cb) => {
         const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME &&
