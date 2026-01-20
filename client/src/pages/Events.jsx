@@ -97,7 +97,7 @@ const Events = () => {
 
                                 {/* Image (Mobile Top / Desktop Left) */}
                                 <div className="h-48 md:h-auto md:w-64 shrink-0 relative overflow-hidden">
-                                    {event.imageUrl ? (
+                                    {event.imageUrl && !event.imageUrl.includes('undefined') ? (
                                         <img
                                             src={event.imageUrl.startsWith('http') ? event.imageUrl : `${api.defaults.baseURL.replace('/api/v1', '')}${event.imageUrl}`}
                                             alt={event.title}
