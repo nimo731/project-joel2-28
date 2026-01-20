@@ -45,6 +45,7 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+// Multer instance for handling uploads
 const upload = multer({
     storage,
     fileFilter,
@@ -52,11 +53,5 @@ const upload = multer({
         fileSize: 100 * 1024 * 1024 // 100MB limit
     }
 });
-
-if (useCloudinary) {
-    console.log('✅ Using Cloudinary for file uploads');
-} else {
-    console.log('⚠️  Cloudinary not configured - using memory storage (files will not persist)');
-}
 
 module.exports = upload;
