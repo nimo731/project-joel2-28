@@ -11,6 +11,13 @@ cloudinary.config({
 
 // Create storage instances for different upload types
 const createCloudinaryStorage = (folder) => {
+    // Re-verify config just in case env vars loaded late
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_APT_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_APT_SECRET
+    });
+
     return new CloudinaryStorage({
         cloudinary: cloudinary,
         params: {
