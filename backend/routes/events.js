@@ -11,16 +11,16 @@ router.get('/', async (req, res) => {
     try {
         const { upcoming, past } = req.query;
         let query = { isPublished: true };
-        
+
         if (upcoming === 'true') {
             query.date = { $gte: new Date() };
         } else if (past === 'true') {
             query.date = { $lt: new Date() };
         }
-        
+
         const events = await Event.find(query)
             .sort({ date: 1 });
-            
+
         res.json({ success: true, events });
     } catch (error) {
         console.error('Error fetching events:', error);
@@ -37,7 +37,7 @@ router.post('/', adminAuth, async (req, res) => {
         // Ensure required fields are present
         const requiredFields = ['title', 'description', 'date', 'startTime', 'endTime', 'venue'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
-        
+
         if (missingFields.length > 0) {
             console.error('Missing required fields:', missingFields);
             return res.status(400).json({
@@ -45,7 +45,7 @@ router.post('/', adminAuth, async (req, res) => {
                 message: `Missing required fields: ${missingFields.join(', ')}`
             });
         }
-        
+
         // Create the event with only the fields defined in the schema
         const eventData = {
             title: req.body.title,
@@ -57,13 +57,15 @@ router.post('/', adminAuth, async (req, res) => {
             timezone: req.body.timezone || 'EAT',
             isOnline: req.body.isOnline || false,
             meetingLink: req.body.meetingLink,
+            imageUrl: req.body.imageUrl,
+            category: req.body.category || 'prayer',
             createdBy: req.user._id,
             isPublished: true
         };
-        
+
         const event = new Event(eventData);
         const savedEvent = await event.save();
-        
+
         console.log('Event created successfully:', savedEvent);
         res.status(201).json({ success: true, event: savedEvent });
     } catch (error) {
@@ -74,8 +76,8 @@ router.post('/', adminAuth, async (req, res) => {
             errors: error.errors,
             stack: error.stack
         });
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Error creating event',
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
@@ -88,21 +90,21 @@ router.post('/', adminAuth, async (req, res) => {
 router.patch('/:id', adminAuth, async (req, res) => {
     try {
         const updates = Object.keys(req.body);
-        const allowedUpdates = ['title', 'description', 'date', 'venue', 'isOnline', 'meetingLink', 'isPublished'];
+        const allowedUpdates = ['title', 'description', 'date', 'venue', 'isOnline', 'meetingLink', 'isPublished', 'imageUrl', 'category'];
         const isValidOperation = updates.every(update => allowedUpdates.includes(update));
-        
+
         if (!isValidOperation) {
             return res.status(400).json({ success: false, message: 'Invalid updates' });
         }
-        
+
         const event = await Event.findById(req.params.id);
         if (!event) {
             return res.status(404).json({ success: false, message: 'Event not found' });
         }
-        
+
         updates.forEach(update => event[update] = req.body[update]);
         await event.save();
-        
+
         res.json({ success: true, event });
     } catch (error) {
         console.error('Error updating event:', error);

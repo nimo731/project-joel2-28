@@ -141,10 +141,12 @@ router.post('/sermons', adminAuth, upload.fields([
 
         if (req.files) {
             if (req.files.thumbnail) {
-                finalThumbnailUrl = `/uploads/${req.files.thumbnail[0].filename}`;
+                const file = req.files.thumbnail[0];
+                finalThumbnailUrl = file.path || `/uploads/${file.filename}`;
             }
             if (req.files.video) {
-                finalVideoLink = `/uploads/${req.files.video[0].filename}`;
+                const file = req.files.video[0];
+                finalVideoLink = file.path || `/uploads/${file.filename}`;
             }
         }
 
@@ -192,13 +194,15 @@ router.put('/sermons/:id', adminAuth, upload.fields([
 
         if (req.files) {
             if (req.files.thumbnail) {
-                sermon.thumbnailUrl = `/uploads/${req.files.thumbnail[0].filename}`;
+                const file = req.files.thumbnail[0];
+                sermon.thumbnailUrl = file.path || `/uploads/${file.filename}`;
             } else if (thumbnailUrl) {
                 sermon.thumbnailUrl = thumbnailUrl;
             }
 
             if (req.files.video) {
-                sermon.videoLink = `/uploads/${req.files.video[0].filename}`;
+                const file = req.files.video[0];
+                sermon.videoLink = file.path || `/uploads/${file.filename}`;
             } else if (videoUrl) {
                 sermon.videoLink = videoUrl;
             }
@@ -262,10 +266,12 @@ router.post('/events', adminAuth, upload.fields([
 
         if (req.files) {
             if (req.files.image) {
-                finalImageUrl = `/uploads/${req.files.image[0].filename}`;
+                const file = req.files.image[0];
+                finalImageUrl = file.path || `/uploads/${file.filename}`;
             }
             if (req.files.video) {
-                finalVideoUrl = `/uploads/${req.files.video[0].filename}`;
+                const file = req.files.video[0];
+                finalVideoUrl = file.path || `/uploads/${file.filename}`;
             }
         }
 
@@ -329,13 +335,15 @@ router.put('/events/:id', adminAuth, upload.fields([
 
         if (req.files) {
             if (req.files.image) {
-                event.imageUrl = `/uploads/${req.files.image[0].filename}`;
+                const file = req.files.image[0];
+                event.imageUrl = file.path || `/uploads/${file.filename}`;
             } else if (imageUrl) {
                 event.imageUrl = imageUrl;
             }
 
             if (req.files.video) {
-                event.videoUrl = `/uploads/${req.files.video[0].filename}`;
+                const file = req.files.video[0];
+                event.videoUrl = file.path || `/uploads/${file.filename}`;
             } else if (videoUrl) {
                 event.videoUrl = videoUrl;
             }
