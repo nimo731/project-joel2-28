@@ -31,7 +31,7 @@ const Footer = () => {
                         aria-label="YouTube">
                         <FaYoutube />
                     </a>
-                    <a href="https://wa.me/254718168860"
+                    <a href="https://wa.me/254742426038"
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ color: 'white', fontSize: '1.25rem', transition: 'opacity 0.3s' }}

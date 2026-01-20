@@ -4,29 +4,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-require('dotenv').config(); // Load from root .env if exists
-// Environment Diagnostics & Normalization
-const normalizeEnv = () => {
-  // Trim everything that looks like a ministry config
-  Object.keys(process.env).forEach(key => {
-    if (key.includes('CLOUDINARY') || key.includes('MONGO') || key.includes('JWT')) {
-      let val = process.env[key].trim();
-      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-        val = val.substring(1, val.length - 1).trim();
-      }
-      process.env[key] = val;
-    }
-  });
+require('./config/envConfig'); // Normalizes environment variables immediately
 
-  // POWER FIX: Automatically alias typos
-  if (process.env.CLOUDINARY_APT_KEY && !process.env.CLOUDINARY_API_KEY) {
-    process.env.CLOUDINARY_API_KEY = process.env.CLOUDINARY_APT_KEY;
-  }
-  if (process.env.CLOUDINARY_APT_SECRET && !process.env.CLOUDINARY_API_SECRET) {
-    process.env.CLOUDINARY_API_SECRET = process.env.CLOUDINARY_APT_SECRET;
-  }
-};
-normalizeEnv();
 
 console.log('--- Environment Initialization ---');
 const logKey = (name) => {
