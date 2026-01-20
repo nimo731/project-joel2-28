@@ -99,7 +99,7 @@ const Events = () => {
                                 <div className="h-48 md:h-auto md:w-64 shrink-0 relative overflow-hidden">
                                     {event.imageUrl ? (
                                         <img
-                                            src={event.imageUrl.startsWith('http') ? event.imageUrl : `http://localhost:5001${event.imageUrl}`}
+                                            src={event.imageUrl.startsWith('http') ? event.imageUrl : `${api.defaults.baseURL.replace('/api/v1', '')}${event.imageUrl}`}
                                             alt={event.title}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                         />

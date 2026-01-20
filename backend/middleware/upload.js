@@ -1,20 +1,36 @@
 const multer = require('multer');
 const { createCloudinaryStorage } = require('../config/cloudinary');
 
+const { normalizeEnv } = require('../config/envConfig');
+
 // Use Cloudinary storage if credentials are available, otherwise use memory storage as fallback
-const getStorageStatus = () => {
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_APT_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_APT_SECRET;
+const storage = {
+    _handleFile: (req, file, cb) => {
+        // Force re-normalization to catch late-loading Render env vars
+        normalizeEnv();
 
-    return !!(cloudName && apiKey && apiSecret);
+        const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME &&
+            (process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_APT_KEY) &&
+            (process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_APT_SECRET);
+
+        const realStorage = useCloudinary
+            ? createCloudinaryStorage('uploads')
+            : multer.memoryStorage();
+
+        realStorage._handleFile(req, file, cb);
+    },
+    _removeFile: (req, file, cb) => {
+        const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME &&
+            (process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_APT_KEY) &&
+            (process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_APT_SECRET);
+
+        const realStorage = useCloudinary
+            ? createCloudinaryStorage('uploads')
+            : multer.memoryStorage();
+
+        realStorage._removeFile(req, file, cb);
+    }
 };
-
-const useCloudinary = getStorageStatus();
-
-const storage = useCloudinary
-    ? createCloudinaryStorage('uploads')
-    : multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
     const allowedTypes = [
