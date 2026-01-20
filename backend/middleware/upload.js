@@ -2,9 +2,15 @@ const multer = require('multer');
 const { createCloudinaryStorage } = require('../config/cloudinary');
 
 // Use Cloudinary storage if credentials are available, otherwise use memory storage as fallback
-const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME &&
-    process.env.CLOUDINARY_API_KEY &&
-    process.env.CLOUDINARY_API_SECRET;
+const getStorageStatus = () => {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_APT_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_APT_SECRET;
+
+    return !!(cloudName && apiKey && apiSecret);
+};
+
+const useCloudinary = getStorageStatus();
 
 const storage = useCloudinary
     ? createCloudinaryStorage('uploads')

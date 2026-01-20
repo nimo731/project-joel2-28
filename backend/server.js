@@ -29,10 +29,20 @@ const normalizeEnv = () => {
 normalizeEnv();
 
 console.log('--- Environment Initialization ---');
-console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? `✅ (${process.env.CLOUDINARY_CLOUD_NAME.length} chars)` : '❌ missing');
-console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '✅ detected' : '❌ missing');
-if (process.env.CLOUDINARY_APT_KEY) console.log('CLOUDINARY_APT_KEY: ✅ detected (will be aliased)');
-console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '✅ detected' : '❌ missing');
+const logKey = (name) => {
+  const val = process.env[name];
+  if (!val) return console.log(`${name}: ❌ missing`);
+  // Show first 3 and last 3 chars for safe verification
+  const masked = val.length > 6
+    ? `${val.substring(0, 3)}...${val.substring(val.length - 3)}`
+    : '***';
+  console.log(`${name}: ✅ detected (${val.length} chars: ${masked})`);
+};
+
+logKey('CLOUDINARY_CLOUD_NAME');
+logKey('CLOUDINARY_API_KEY');
+logKey('CLOUDINARY_API_SECRET');
+if (process.env.CLOUDINARY_APT_KEY) console.log('CLOUDINARY_APT_KEY: ✅ detected (aliased to API_KEY)');
 console.log('---------------------------------');
 
 const app = express();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaFacebookF, FaYoutube, FaEnvelope } from 'react-icons/fa';
+import { FaFacebookF, FaYoutube, FaEnvelope, FaWhatsapp } from 'react-icons/fa';
 
 const Footer = () => {
     return (
@@ -30,6 +30,15 @@ const Footer = () => {
                         onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                         aria-label="YouTube">
                         <FaYoutube />
+                    </a>
+                    <a href="https://wa.me/254718168860"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: 'white', fontSize: '1.25rem', transition: 'opacity 0.3s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                        aria-label="WhatsApp">
+                        <FaWhatsapp />
                     </a>
                     <a href="mailto:thejoelgeneration52@gmail.com"
                         style={{ color: 'white', fontSize: '1.25rem', transition: 'opacity 0.3s' }}

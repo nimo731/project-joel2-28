@@ -126,12 +126,12 @@ router.post('/profile/photo', auth, upload.single('profileImage'), async (req, r
             // Helpful hint discoverable via logs
             let hint = '';
             if (process.env.CLOUDINARY_APT_KEY || process.env.CLOUDINARY_APT_SECRET) {
-                hint = ' Hint: Detected "APT" instead of "API" in Render names.';
+                hint = ' Hint: Detected "APT" instead of "API" in Render names. I have applied a "Power Fix" in server.js to alias these, but please check your Render settings to be safe.';
             }
 
             return res.status(500).json({
                 success: false,
-                message: `Server is running in restricted mode. Cloudinary (persistent storage) is not currently active.${hint}`
+                message: `Server is running in restricted mode. Cloudinary (persistent storage) is not currently active.${hint} Backend Logs: [${process.env.CLOUDINARY_CLOUD_NAME ? 'CLOUD_OK' : 'NO_CLOUD'}] [${(process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_APT_KEY) ? 'KEY_OK' : 'NO_KEY'}] [${(process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_APT_SECRET) ? 'SECRET_OK' : 'NO_SECRET'}]`
             });
         }
 
