@@ -18,10 +18,28 @@ router.get('/', async (req, res) => {
             query.date = { $lt: new Date() };
         }
 
-        const events = await Event.find(query)
-            .sort({ date: 1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-        res.json({ success: true, events });
+        const [events, total] = await Promise.all([
+            Event.find(query)
+                .sort({ date: 1 })
+                .skip(skip)
+                .limit(limit),
+            Event.countDocuments(query)
+        ]);
+
+        res.json({
+            success: true,
+            events,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.ceil(total / limit)
+            }
+        });
     } catch (error) {
         console.error('Error fetching events:', error);
         res.status(500).json({ success: false, message: 'Server error' });

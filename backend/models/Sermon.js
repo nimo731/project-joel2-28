@@ -70,7 +70,8 @@ const sermonSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for search functionality
+// Indices for performance
+sermonSchema.index({ isPublished: 1, date: -1 });
 sermonSchema.index({ title: 'text', description: 'text', preacher: 'text' });
 
 module.exports = mongoose.model('Sermon', sermonSchema);

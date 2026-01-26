@@ -10,6 +10,7 @@ const Sermons = () => {
     const [error, setError] = useState(null);
     const [activeFilter, setActiveFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [pagination, setPagination] = useState({ page: 1, pages: 1 });
 
     useEffect(() => {
         fetchSermons();
@@ -19,15 +20,22 @@ const Sermons = () => {
         filterContent();
     }, [sermons, activeFilter, searchQuery]);
 
-    const fetchSermons = async () => {
+    const fetchSermons = async (page = 1) => {
         try {
-            const response = await api.get('/sermons');
-            const data = response.data.sermons || [];
-            setSermons(data);
+            setLoading(true);
+            const response = await api.get(`/sermons?page=${page}&limit=12`);
+            if (page === 1) {
+                setSermons(response.data.sermons || []);
+            } else {
+                setSermons(prev => [...prev, ...(response.data.sermons || [])]);
+            }
+            if (response.data.pagination) {
+                setPagination(response.data.pagination);
+            }
             setLoading(false);
         } catch (err) {
             console.error('Error fetching sermons:', err);
-            setSermons([]);
+            if (page === 1) setSermons([]);
             setLoading(false);
         }
     };
@@ -205,6 +213,18 @@ const Sermons = () => {
                     </div>
                 )}
             </div>
+
+            {/* Load More Button */}
+            {!loading && pagination.page < pagination.pages && (
+                <div className="flex justify-center mt-12 px-4">
+                    <button
+                        onClick={() => fetchSermons(pagination.page + 1)}
+                        className="px-10 py-3 bg-white text-zegen-red border-2 border-zegen-red font-bold rounded-full hover:bg-zegen-red hover:text-white transition-all transform hover:-translate-y-1 shadow-md"
+                    >
+                        Load More Sermons
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

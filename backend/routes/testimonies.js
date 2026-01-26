@@ -72,24 +72,50 @@ router.post('/', auth, [
 router.get('/', async (req, res) => {
     try {
         const storage = req.app.locals.storage;
-        let testimonies;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 9;
+        const skip = (page - 1) * limit;
 
+        let resultData;
         if (process.env.MONGODB_URI) {
-            testimonies = await Testimony.find({ isApproved: true })
-                .populate('userId', 'name profileImage') // Include profile image for UI
-                .sort({ isFeatured: -1, createdAt: -1 });
+            const [testimonies, total] = await Promise.all([
+                Testimony.find({ isApproved: true })
+                    .populate('userId', 'name profileImage')
+                    .sort({ isFeatured: -1, createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit),
+                Testimony.countDocuments({ isApproved: true })
+            ]);
+            resultData = {
+                testimonies,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    pages: Math.ceil(total / limit)
+                }
+            };
         } else {
-            testimonies = storage.testimonies
+            const filtered = storage.testimonies
                 .filter(t => t.isApproved)
                 .sort((a, b) => {
                     if (a.isFeatured !== b.isFeatured) return b.isFeatured - a.isFeatured;
                     return new Date(b.createdAt) - new Date(a.createdAt);
                 });
+            resultData = {
+                testimonies: filtered.slice(skip, skip + limit),
+                pagination: {
+                    total: filtered.length,
+                    page,
+                    limit,
+                    pages: Math.ceil(filtered.length / limit)
+                }
+            };
         }
 
         res.json({
             success: true,
-            testimonies
+            ...resultData
         });
     } catch (error) {
         console.error('Get testimonies error:', error);

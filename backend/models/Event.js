@@ -93,7 +93,8 @@ const eventSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for date-based queries
+// Indices for performance
+eventSchema.index({ isPublished: 1, date: 1 });
 eventSchema.index({ date: 1, startTime: 1 });
 
 module.exports = mongoose.model('Event', eventSchema);

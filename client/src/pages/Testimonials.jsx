@@ -8,15 +8,27 @@ const Testimonials = () => {
     const navigate = useNavigate();
     const [testimonials, setTestimonials] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState({ page: 1, pages: 1 });
     const currentUser = JSON.parse(localStorage.getItem('user'));
 
-    const fetchTestimonials = async () => {
+    const fetchTestimonials = async (page = 1) => {
         try {
-            const response = await api.get('/testimonies');
-            setTestimonials(response.data.testimonies || []);
+            if (page === 1) setLoading(true);
+            const response = await api.get(`/testimonies?page=${page}&limit=9`);
+            const newTestimonies = response.data.testimonies || [];
+
+            if (page === 1) {
+                setTestimonials(newTestimonies);
+            } else {
+                setTestimonials(prev => [...prev, ...newTestimonies]);
+            }
+
+            if (response.data.pagination) {
+                setPagination(response.data.pagination);
+            }
         } catch (err) {
             console.error('Error fetching testimonials:', err);
-            setTestimonials([]);
+            if (page === 1) setTestimonials([]);
         } finally {
             setLoading(false);
         }
@@ -125,6 +137,18 @@ const Testimonials = () => {
                         </div>
                     );
                 })}
+
+                {/* Load More Button */}
+                {!loading && pagination.page < pagination.pages && (
+                    <div className="flex justify-center mt-12 col-span-full">
+                        <button
+                            onClick={() => fetchTestimonials(pagination.page + 1)}
+                            className="px-8 py-3 bg-white text-zegen-blue border-2 border-zegen-blue font-bold rounded-full hover:bg-zegen-blue hover:text-white transition-all transform hover:-translate-y-1 shadow-md"
+                        >
+                            Load More Stories
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* CTA / Submission Section */}

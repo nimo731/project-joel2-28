@@ -8,6 +8,7 @@ const Events = () => {
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [pagination, setPagination] = useState({ page: 1, pages: 1 });
 
     useEffect(() => {
         fetchEvents();
@@ -21,14 +22,25 @@ const Events = () => {
         }
     }, [events, filter]);
 
-    const fetchEvents = async () => {
+    const fetchEvents = async (page = 1) => {
         try {
-            const response = await api.get('/events');
-            setEvents(response.data.events || []);
+            setLoading(page === 1); // Only show full loader for first page
+            const response = await api.get(`/events?page=${page}&limit=10`);
+            const newEvents = response.data.events || [];
+
+            if (page === 1) {
+                setEvents(newEvents);
+            } else {
+                setEvents(prev => [...prev, ...newEvents]);
+            }
+
+            if (response.data.pagination) {
+                setPagination(response.data.pagination);
+            }
             setLoading(false);
         } catch (err) {
             console.error('Error fetching events:', err);
-            setEvents([]);
+            if (page === 1) setEvents([]);
             setLoading(false);
         }
     };
@@ -151,6 +163,18 @@ const Events = () => {
                     </div>
                 )}
             </div>
+
+            {/* Load More Button */}
+            {!loading && pagination.page < pagination.pages && (
+                <div className="flex justify-center mt-12 px-4 shadow-sm">
+                    <button
+                        onClick={() => fetchEvents(pagination.page + 1)}
+                        className="px-10 py-3 bg-zegen-blue text-white font-bold rounded-lg hover:bg-blue-900 transition-all transform hover:-translate-y-1"
+                    >
+                        Load More Events
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

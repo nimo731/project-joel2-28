@@ -27,8 +27,28 @@ const upload = multer({ storage });
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const sermons = await Sermon.find({ isPublished: true }).sort({ date: -1 }).limit(50);
-    res.json({ success: true, sermons });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12; // Standard grid size
+    const skip = (page - 1) * limit;
+
+    const [sermons, total] = await Promise.all([
+      Sermon.find({ isPublished: true })
+        .sort({ date: -1 })
+        .skip(skip)
+        .limit(limit),
+      Sermon.countDocuments({ isPublished: true })
+    ]);
+
+    res.json({
+      success: true,
+      sermons,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Get sermons error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
