@@ -6,7 +6,7 @@ const normalizeEnv = () => {
 
     // Trim everything that looks like a ministry config
     Object.keys(process.env).forEach(key => {
-        if (key.includes('CLOUDINARY') || key.includes('MONGO') || key.includes('JWT')) {
+        if (key.includes('CLOUDINARY') || key.includes('MONGO') || key.includes('JWT') || key.includes('EMAIL')) {
             const original = process.env[key];
             if (typeof original !== 'string') return;
 
@@ -22,6 +22,14 @@ const normalizeEnv = () => {
     });
 
     // POWER FIX: Automatically alias typos
+    if (process.env.EMAIL_PASS && !process.env.EMAIL_PASSWORD) {
+        process.env.EMAIL_PASSWORD = process.env.EMAIL_PASS;
+        changed = true;
+    }
+    if (process.env.EMAIL_PASSWORD && !process.env.EMAIL_PASS) {
+        process.env.EMAIL_PASS = process.env.EMAIL_PASSWORD;
+        changed = true;
+    }
     if (process.env.CLOUDINARY_APT_KEY && !process.env.CLOUDINARY_API_KEY) {
         process.env.CLOUDINARY_API_KEY = process.env.CLOUDINARY_APT_KEY;
         changed = true;

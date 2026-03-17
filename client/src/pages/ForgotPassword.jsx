@@ -36,8 +36,11 @@ const ForgotPassword = () => {
                 <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
                     <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Check Your Email</h2>
-                    <p className="text-gray-600 mb-6">
+                    <p className="text-gray-600 mb-4">
                         {message || "If an account exists with that email, we've sent instructions to reset your password."}
+                    </p>
+                    <p className="text-sm text-gray-500 mb-6">
+                        Don't forget to check your spam folder!
                     </p>
                     <Link
                         to="/login"

@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 
@@ -260,15 +261,17 @@ router.post('/forgot-password', [
         const resetToken = user.createPasswordResetToken();
         await user.save({ validateBeforeSave: false });
 
-        // In a real app, send email here. For now, log it and return for demo.
-        console.log('--- PASSWORD RESET TOKEN ---');
-        console.log(`User: ${email}`);
-        console.log(`Token: ${resetToken}`);
-        console.log('---------------------------');
+        // Send reset email
+        try {
+            await emailService.sendPasswordResetEmail(user, resetToken);
+        } catch (emailError) {
+            console.error('Error sending password reset email:', emailError);
+            // We still return success for security, but log the error
+        }
 
         res.json({
             success: true,
-            message: 'Password reset token generated.',
+            message: 'If an account exists with that email, a reset email has been sent.',
             // Only return token in response for development/demo purposes
             demoToken: process.env.NODE_ENV === 'development' ? resetToken : undefined
         });
