@@ -103,7 +103,7 @@ const Testimonials = () => {
                             <div className="flex items-center mb-6 relative z-10">
                                 <img
                                     src={t.userId?.profileImage
-                                        ? `http://localhost:5001${t.userId.profileImage}`
+                                        ? (t.userId.profileImage.startsWith('http') ? t.userId.profileImage : `${api.defaults.baseURL.replace('/api/v1', '')}${t.userId.profileImage}`)
                                         : (t.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y')}
                                     alt={t.name || t.userId?.name}
                                     className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm mr-4"
