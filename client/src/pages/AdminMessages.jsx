@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import DashboardLayout from '../components/DashboardLayout';
-import { FaEnvelope, FaReply, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaEnvelope, FaReply, FaTrash, FaEdit, FaArrowLeft } from 'react-icons/fa';
 import ComposeMessage from '../components/ComposeMessage';
 
 const AdminMessages = () => {
@@ -183,7 +183,7 @@ const AdminMessages = () => {
             <div className="flex h-[calc(100vh-160px)] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
 
                 {/* 1. Left Sidebar: Conversations List */}
-                <div className="w-1/3 md:w-1/4 border-r border-gray-200 flex flex-col bg-gray-50 flex-shrink-0">
+                <div className={`${activeConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex-col bg-gray-50 flex-shrink-0 z-10`}>
                     <div className="p-4 border-b border-gray-200 bg-white font-bold text-gray-700 uppercase text-xs tracking-wider flex justify-between items-center">
                         <span>Active Chats</span>
                         <span className="bg-zegen-blue text-white rounded-full px-2 py-0.5 text-[10px]">{conversations.length}</span>
@@ -200,9 +200,17 @@ const AdminMessages = () => {
                                 onClick={() => selectConversation(conv.partner._id)}
                                 className={`p-4 border-b border-gray-100 cursor-pointer flex items-center gap-3 transition-colors ${activeConversation === conv.partner._id ? 'bg-blue-50/70 border-l-4 border-zegen-blue' : 'hover:bg-gray-100 border-l-4 border-transparent'}`}
                             >
-                                <div className="w-10 h-10 rounded-full bg-zegen-blue text-white flex items-center justify-center font-bold flex-shrink-0 shadow-sm text-sm">
-                                    {conv.partner.name?.charAt(0).toUpperCase() || '?'}
-                                </div>
+                                {conv.partner.profileImage || conv.partner.avatar ? (
+                                    <img
+                                        src={(conv.partner.profileImage && conv.partner.profileImage.startsWith('http')) ? conv.partner.profileImage : `${api.defaults.baseURL.replace('/api/v1', '')}${conv.partner.profileImage || conv.partner.avatar}`}
+                                        alt={conv.partner.name}
+                                        className="w-12 h-12 rounded-full object-cover shadow-sm border border-gray-200 flex-shrink-0"
+                                    />
+                                ) : (
+                                    <div className="w-12 h-12 rounded-full bg-zegen-blue text-white flex items-center justify-center font-bold flex-shrink-0 shadow-sm text-lg">
+                                        {conv.partner.name?.charAt(0).toUpperCase() || '?'}
+                                    </div>
+                                )}
                                 <div className="flex-grow min-w-0">
                                     <div className="flex justify-between items-center mb-1">
                                         <h4 className={`text-sm truncate ${conv.unreadCount > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>
@@ -227,15 +235,30 @@ const AdminMessages = () => {
                 </div>
 
                 {/* 2. Right Panel: Chat Area */}
-                <div className="w-2/3 md:w-3/4 flex flex-col bg-[#f8fbff] relative">
+                <div className={`${!activeConversation ? 'hidden md:flex' : 'flex'} w-full md:w-2/3 lg:w-3/4 flex-col bg-[#f8fbff] relative`}>
                     {activeConvData ? (
                         <>
                             {/* Chat Header */}
                             <div className="p-3 border-b border-gray-200 bg-white flex items-center justify-between shadow-sm z-10">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold shadow-sm">
-                                        {activeConvData.partner.name?.charAt(0).toUpperCase() || '?'}
-                                    </div>
+                                    <button
+                                        className="md:hidden mr-1 text-gray-500 hover:text-zegen-blue p-2 rounded-full hover:bg-gray-100 transition-colors"
+                                        onClick={() => setActiveConversation(null)}
+                                    >
+                                        <FaArrowLeft />
+                                    </button>
+
+                                    {activeConvData.partner.profileImage || activeConvData.partner.avatar ? (
+                                        <img
+                                            src={(activeConvData.partner.profileImage && activeConvData.partner.profileImage.startsWith('http')) ? activeConvData.partner.profileImage : `${api.defaults.baseURL.replace('/api/v1', '')}${activeConvData.partner.profileImage || activeConvData.partner.avatar}`}
+                                            alt={activeConvData.partner.name}
+                                            className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200"
+                                        />
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold shadow-sm">
+                                            {activeConvData.partner.name?.charAt(0).toUpperCase() || '?'}
+                                        </div>
+                                    )}
                                     <div>
                                         <h3 className="font-bold text-gray-800 text-sm leading-tight">{activeConvData.partner.name || 'Unknown'}</h3>
                                         <p className="text-xs text-gray-500">{activeConvData.partner.email}</p>

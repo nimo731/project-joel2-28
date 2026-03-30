@@ -111,40 +111,57 @@ const AdminSermons = () => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
-                        <tr>
-                            <th className="px-6 py-4">Title</th>
-                            <th className="px-6 py-4">Preacher</th>
-                            <th className="px-6 py-4">Category</th>
-                            <th className="px-6 py-4">Date</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {loading ? (
-                            <tr><td colSpan="5" className="p-6 text-center text-gray-500">Loading...</td></tr>
-                        ) : sermons.length === 0 ? (
-                            <tr><td colSpan="5" className="p-12 text-center text-gray-400 italic">"Sermons not yet uploaded"</td></tr>
-                        ) : sermons.map(sermon => (
-                            <tr key={sermon._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 font-medium text-gray-800">{sermon.title}</td>
-                                <td className="px-6 py-4 text-gray-600">{sermon.preacher}</td>
-                                <td className="px-6 py-4">
-                                    <span className="px-2 py-1 rounded bg-blue-50 text-blue-600 text-xs font-bold uppercase">{sermon.category}</span>
-                                </td>
-                                <td className="px-6 py-4 text-gray-500 text-sm">
-                                    {new Date(sermon.date).toLocaleDateString()}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button onClick={() => openModal(sermon)} className="text-blue-500 hover:text-blue-700 mx-2"><FaEdit /></button>
-                                    <button onClick={() => handleDelete(sermon._id)} className="text-red-500 hover:text-red-700 mx-2"><FaTrash /></button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {loading ? (
+                    <div className="col-span-full p-12 text-center text-gray-500 font-medium animate-pulse">Loading sermons...</div>
+                ) : sermons.length === 0 ? (
+                    <div className="col-span-full p-16 text-center text-gray-400 italic bg-white rounded-2xl shadow-sm border border-gray-100">"No sermons have been uploaded yet"</div>
+                ) : sermons.map(sermon => (
+                    <div key={sermon._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col relative">
+                        {/* Decorative top accent */}
+                        <div className="h-1.5 w-full bg-gradient-to-r from-zegen-blue to-blue-900 absolute top-0 left-0"></div>
+
+                        <div className="p-6 flex-grow flex flex-col mt-2">
+                            <div className="flex justify-between items-start mb-4">
+                                <span className="px-3 py-1 rounded-full bg-blue-50 text-zegen-blue text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-sm">
+                                    {sermon.category}
+                                </span>
+                                <span className="text-xs text-gray-400 font-medium">
+                                    {new Date(sermon.date).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </span>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-gray-800 mb-1 leading-tight group-hover:text-zegen-blue transition-colors">
+                                {sermon.title}
+                            </h3>
+                            <p className="text-sm text-gray-500 mb-4 font-medium flex items-center gap-2">
+                                <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs text-gray-600">
+                                    <FaVideo className="w-3 h-3" />
+                                </span>
+                                {sermon.preacher}
+                            </p>
+
+                            <p className="text-sm text-gray-600 line-clamp-3 mb-6 relative z-10">
+                                {sermon.description || 'No description provided.'}
+                            </p>
+                        </div>
+
+                        <div className="p-4 border-t border-gray-50 bg-gray-50/50 flex justify-end gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                            <button
+                                onClick={() => openModal(sermon)}
+                                className="px-3 py-1.5 bg-white text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg text-sm font-medium transition-colors shadow-sm border border-gray-200"
+                            >
+                                <FaEdit className="inline mr-1" /> Edit
+                            </button>
+                            <button
+                                onClick={() => handleDelete(sermon._id)}
+                                className="px-3 py-1.5 bg-white text-red-500 hover:text-white hover:bg-red-500 rounded-lg text-sm font-medium transition-colors shadow-sm border border-gray-200"
+                            >
+                                <FaTrash className="inline mr-1" /> Delete
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Modal */}

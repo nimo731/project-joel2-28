@@ -51,7 +51,7 @@ router.post('/', protect, async (req, res) => {
 router.get('/', protect, async (req, res) => {
     try {
         const messages = await Message.find({ recipient: req.user.id })
-            .populate('sender', 'name email')
+            .populate('sender', 'name email profileImage avatar')
             .sort({ createdAt: -1 });
 
         res.json({ success: true, count: messages.length, messages });
@@ -66,7 +66,7 @@ router.get('/', protect, async (req, res) => {
 router.get('/sent', protect, async (req, res) => {
     try {
         const messages = await Message.find({ sender: req.user.id })
-            .populate('recipient', 'name email')
+            .populate('recipient', 'name email profileImage avatar')
             .sort({ createdAt: -1 });
 
         res.json({ success: true, count: messages.length, messages });

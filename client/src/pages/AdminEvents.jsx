@@ -113,41 +113,59 @@ const AdminEvents = () => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
-                        <tr>
-                            <th className="px-6 py-4">Event Name</th>
-                            <th className="px-6 py-4">Date & Time</th>
-                            <th className="px-6 py-4">Venue</th>
-                            <th className="px-6 py-4">Type</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {loading ? (
-                            <tr><td colSpan="5" className="p-6 text-center text-gray-500">Loading...</td></tr>
-                        ) : events.length === 0 ? (
-                            <tr><td colSpan="5" className="p-12 text-center text-gray-400 italic">"No events available yet"</td></tr>
-                        ) : events.map(event => (
-                            <tr key={event._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 font-medium text-gray-800">{event.title}</td>
-                                <td className="px-6 py-4 text-gray-600">
-                                    <div className="text-sm font-semibold">{new Date(event.date).toLocaleDateString()}</div>
-                                    <div className="text-xs">{event.startTime} - {event.endTime}</div>
-                                </td>
-                                <td className="px-6 py-4 text-gray-600 text-sm">{event.venue}</td>
-                                <td className="px-6 py-4">
-                                    <span className="px-2 py-1 rounded bg-green-50 text-green-700 text-xs font-bold uppercase">{event.category}</span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button onClick={() => openModal(event)} className="text-blue-500 hover:text-blue-700 mx-2"><FaEdit /></button>
-                                    <button onClick={() => handleDelete(event._id)} className="text-red-500 hover:text-red-700 mx-2"><FaTrash /></button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {loading ? (
+                    <div className="col-span-full p-12 text-center text-gray-500 font-medium animate-pulse">Loading events...</div>
+                ) : events.length === 0 ? (
+                    <div className="col-span-full p-16 text-center text-gray-400 italic bg-white rounded-2xl shadow-sm border border-gray-100">"No events available yet"</div>
+                ) : events.map(event => (
+                    <div key={event._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col relative">
+                        {/* Decorative top accent */}
+                        <div className="h-1.5 w-full bg-gradient-to-r from-zegen-red to-red-800 absolute top-0 left-0"></div>
+
+                        <div className="p-6 flex-grow flex flex-col mt-2">
+                            <div className="flex justify-between items-start mb-4">
+                                <span className="px-3 py-1 rounded-full bg-red-50 text-zegen-red text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-sm">
+                                    {event.category}
+                                </span>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-gray-800 mb-3 leading-tight group-hover:text-zegen-red transition-colors">
+                                {event.title}
+                            </h3>
+
+                            <div className="space-y-2 mb-4">
+                                <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-500">📅</span>
+                                    {new Date(event.date).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                                </p>
+                                <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-500">⏰</span>
+                                    {event.startTime} - {event.endTime}
+                                </p>
+                                <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-500">📍</span>
+                                    <span className="truncate" title={event.venue}>{event.venue}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="p-4 border-t border-gray-50 bg-gray-50/50 flex justify-end gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                            <button
+                                onClick={() => openModal(event)}
+                                className="px-3 py-1.5 bg-white text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg text-sm font-medium transition-colors shadow-sm border border-gray-200"
+                            >
+                                <FaEdit className="inline mr-1" /> Edit
+                            </button>
+                            <button
+                                onClick={() => handleDelete(event._id)}
+                                className="px-3 py-1.5 bg-white text-red-500 hover:text-white hover:bg-red-500 rounded-lg text-sm font-medium transition-colors shadow-sm border border-gray-200"
+                            >
+                                <FaTrash className="inline mr-1" /> Delete
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Modal */}
