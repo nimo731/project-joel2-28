@@ -184,7 +184,8 @@ router.get('/admin-contact', auth, async (req, res) => {
 router.post('/find', auth, async (req, res) => {
     try {
         const { email } = req.body;
-        const user = await User.findOne({ email }).select('name email _id');
+        // Use a case-insensitive regex specifically matching the trimmed email
+        const user = await User.findOne({ email: new RegExp('^' + email.trim() + '$', 'i') }).select('name email _id');
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
