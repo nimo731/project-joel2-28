@@ -63,10 +63,8 @@ const AdminPrayers = () => {
                 content: finalMessage
             });
 
-            // Attempt to mark as answered/approved so it updates the status
-            if (prayer.status === 'pending') {
-                await api.patch(`/admin/prayers/${prayer._id}/approve`);
-            }
+            // Mark as answered when replying
+            await api.patch(`/admin/prayers/${prayer._id}/answer`);
 
             alert('Reply sent and user notified in their inbox!');
             setReplyInputs(prev => ({ ...prev, [prayer._id]: '' }));

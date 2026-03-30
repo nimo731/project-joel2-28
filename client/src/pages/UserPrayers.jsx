@@ -99,9 +99,19 @@ const UserPrayers = () => {
                         <p className="text-gray-600 text-sm mb-4 flex-grow pl-3 line-clamp-3">{prayer.request}</p>
 
                         <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 pl-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${prayer.status === 'answered' ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-600'}`}>
-                                {prayer.status || 'Active'}
-                            </span>
+                            <div className="flex flex-col gap-2">
+                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase w-fit ${prayer.status === 'answered' ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-600'}`}>
+                                    {prayer.status || 'Active'}
+                                </span>
+                                {prayer.status === 'answered' && (
+                                    <button
+                                        onClick={() => window.location.href = '/userdashboard/messages'}
+                                        className="text-[10px] font-bold text-white bg-zegen-blue px-2 py-1 rounded hover:bg-blue-700 transition flex items-center gap-1 shadow-sm"
+                                    >
+                                        View Admin Reply
+                                    </button>
+                                )}
+                            </div>
                             <div className="flex items-center text-gray-400 text-sm">
                                 <FaPray className="mr-1" /> {prayer.prayerCount || 0}
                             </div>

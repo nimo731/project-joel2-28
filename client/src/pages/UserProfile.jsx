@@ -108,6 +108,9 @@ const UserProfile = () => {
             const newImageUrl = response.data.profileImage;
             if (newImageUrl && (newImageUrl.startsWith('http') || newImageUrl.startsWith('/'))) {
                 setUser(prev => ({ ...prev, profileImage: newImageUrl }));
+                // Update localStorage
+                const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+                localStorage.setItem('user', JSON.stringify({ ...storedUser, profileImage: newImageUrl }));
                 setPreviewUrl(null); // Clear preview, use real URL
                 setMessage({ type: 'success', text: 'Profile photo updated!' });
             } else {
@@ -136,7 +139,11 @@ const UserProfile = () => {
             setUser(prev => ({ ...prev, ...response.data.user }));
             // Update localStorage
             const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-            localStorage.setItem('user', JSON.stringify({ ...storedUser, name: user.name }));
+            localStorage.setItem('user', JSON.stringify({
+                ...storedUser,
+                name: user.name,
+                profileImage: response.data.user.profileImage || user.profileImage
+            }));
 
             setMessage({ type: 'success', text: 'Profile updated successfully!' });
         } catch (error) {
@@ -198,12 +205,8 @@ const UserProfile = () => {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                     <div className="flex flex-col items-center justify-center mb-8">
                         <div className="relative mb-2">
-                            {isAdmin ? (
-                                <div className="h-24 w-24 rounded-full border-4 border-zegen-red/20 overflow-hidden bg-black p-3">
-                                    <img src="/joel228-logo.png" alt="Admin" className="h-full w-full object-contain" />
-                                </div>
-                            ) : previewUrl ? (
-                                <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 overflow-hidden bg-gray-50">
+                            {previewUrl ? (
+                                <div className={`h-24 w-24 rounded-full border-4 ${isAdmin ? 'border-zegen-red/20' : 'border-zegen-blue/20'} overflow-hidden bg-gray-50`}>
                                     <img
                                         src={previewUrl}
                                         alt="Preview"
@@ -211,23 +214,23 @@ const UserProfile = () => {
                                     />
                                 </div>
                             ) : user.profileImage ? (
-                                <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 overflow-hidden bg-gray-50">
+                                <div className={`h-24 w-24 rounded-full border-4 ${isAdmin ? 'border-zegen-red/20' : 'border-zegen-blue/20'} overflow-hidden bg-gray-50`}>
                                     <img
                                         src={user.profileImage.startsWith('http') || user.profileImage.startsWith('data:') ? user.profileImage : `${backendUrl}${user.profileImage}`}
                                         alt="Profile"
                                         className="h-full w-full object-cover"
                                         onError={(e) => {
                                             e.target.onerror = null;
-                                            e.target.parentElement.innerHTML = `<div class="h-full w-full bg-zegen-red flex items-center justify-center text-4xl font-bold text-white">${user.name ? user.name.charAt(0).toUpperCase() : 'U'}</div>`;
+                                            e.target.parentElement.innerHTML = `<div class="h-full w-full ${isAdmin ? 'bg-zegen-red' : 'bg-zegen-blue'} flex items-center justify-center text-4xl font-bold text-white">${user.name ? user.name.charAt(0).toUpperCase() : 'U'}</div>`;
                                         }}
                                     />
                                 </div>
                             ) : (
-                                <div className="h-24 w-24 rounded-full border-4 border-zegen-blue/20 bg-zegen-red flex items-center justify-center text-4xl font-bold text-white">
+                                <div className={`h-24 w-24 rounded-full border-4 ${isAdmin ? 'border-zegen-red/20' : 'border-zegen-blue/20'} ${isAdmin ? 'bg-zegen-red' : 'bg-zegen-blue'} flex items-center justify-center text-4xl font-bold text-white`}>
                                     {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                                 </div>
                             )}
-                            {!isAdmin && (
+                            {true && (
                                 <>
                                     <input
                                         type="file"
@@ -240,7 +243,7 @@ const UserProfile = () => {
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={uploadingPhoto}
-                                        className={`absolute bottom-0 right-0 bg-zegen-blue text-white p-2 rounded-full text-xs shadow-md border-2 border-white hover:bg-700 transition-colors ${uploadingPhoto ? 'opacity-50 cursor-wait' : ''}`}
+                                        className={`absolute bottom-0 right-0 ${isAdmin ? 'bg-zegen-red' : 'bg-zegen-blue'} text-white p-2 rounded-full text-xs shadow-md border-2 border-white hover:opacity-90 transition-colors ${uploadingPhoto ? 'opacity-50 cursor-wait' : ''}`}
                                     >
                                         {uploadingPhoto ? (
                                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -251,14 +254,7 @@ const UserProfile = () => {
                                 </>
                             )}
                         </div>
-                        {isAdmin && (
-                            <span className="text-xs font-bold text-zegen-red uppercase tracking-wider bg-red-50 px-3 py-1 rounded-full">
-                                Official Admin Profile
-                            </span>
-                        )}
-                        {!isAdmin && (
-                            <p className="text-xs text-gray-400 mt-2">Click the camera icon to upload a photo</p>
-                        )}
+                        <p className="text-xs text-gray-400 mt-2">Click the camera icon to upload a photo</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">

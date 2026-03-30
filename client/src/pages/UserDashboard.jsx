@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import DashboardLayout from '../components/DashboardLayout';
-import { FaPlus, FaPray, FaComments, FaQuoteLeft } from 'react-icons/fa';
+import { FaPlus, FaPray, FaComments, FaQuoteLeft, FaCommentDots } from 'react-icons/fa';
 
 const UserDashboard = () => {
     const [user, setUser] = useState(() => {
@@ -88,7 +88,20 @@ const UserDashboard = () => {
                                         </span>
                                     </div>
                                     <p className="text-gray-600 text-sm mb-3 line-clamp-2">{prayer.request}</p>
-                                    <div className="text-xs text-gray-400">{new Date(prayer.createdAt).toLocaleDateString()}</div>
+                                    <div className="flex justify-between items-center mt-3">
+                                        <div className="text-xs text-gray-400">{new Date(prayer.createdAt).toLocaleDateString()}</div>
+                                        {prayer.status === 'answered' && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate('/userdashboard/messages');
+                                                }}
+                                                className="text-xs font-bold text-zegen-blue hover:text-blue-700 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded"
+                                            >
+                                                <FaCommentDots className="w-3 h-3" /> View Admin Reply
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

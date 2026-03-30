@@ -96,6 +96,27 @@ router.patch('/prayers/:id/approve', adminAuth, async (req, res) => {
     }
 });
 
+// @route   PATCH /api/admin/prayers/:id/answer
+// @desc    Mark prayer as answered
+// @access  Admin
+router.patch('/prayers/:id/answer', adminAuth, async (req, res) => {
+    try {
+        const prayer = await PrayerRequest.findById(req.params.id);
+        if (!prayer) {
+            return res.status(404).json({ success: false, message: 'Prayer not found' });
+        }
+
+        prayer.status = 'answered';
+        prayer.answeredAt = new Date();
+        await prayer.save();
+
+        res.json({ success: true, prayer });
+    } catch (error) {
+        console.error('Error answering prayer:', error);
+        res.status(500).json({ success: false, message: 'Error marking prayer as answered' });
+    }
+});
+
 // @route   DELETE /api/admin/prayers/:id
 // @desc    Delete a prayer request
 // @access  Admin
