@@ -12,6 +12,8 @@ const UserMessages = () => {
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [isComposeOpen, setIsComposeOpen] = useState(false);
     const [adminContact, setAdminContact] = useState(null);
+    const [editingMsgId, setEditingMsgId] = useState(null);
+    const [editContent, setEditContent] = useState('');
 
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('user');
@@ -102,6 +104,22 @@ const UserMessages = () => {
         }
     };
 
+    const startEdit = () => {
+        setEditingMsgId(selectedMessage._id);
+        setEditContent(selectedMessage.content);
+    };
+
+    const submitEdit = async () => {
+        try {
+            await api.patch(`/messages/${editingMsgId}`, { content: editContent });
+            setMessages(messages.map(m => m._id === editingMsgId ? { ...m, content: editContent } : m));
+            setSelectedMessage({ ...selectedMessage, content: editContent });
+            setEditingMsgId(null);
+        } catch (error) {
+            alert('Failed to update message');
+        }
+    };
+
     return (
         <DashboardLayout role="user" user={user}>
             <div className="flex justify-between items-center mb-6">
@@ -174,16 +192,41 @@ const UserMessages = () => {
                                     <span>{new Date(selectedMessage.createdAt).toLocaleString()}</span>
                                 </div>
                             </div>
-                            <div className="prose max-w-none text-gray-600 leading-relaxed overflow-y-auto flex-grow">
-                                {selectedMessage.content}
-                            </div>
-                            <div className="mt-6 pt-4 border-t border-gray-100">
+
+                            {editingMsgId === selectedMessage._id ? (
+                                <div className="flex-grow flex flex-col mt-4">
+                                    <textarea
+                                        value={editContent}
+                                        onChange={(e) => setEditContent(e.target.value)}
+                                        className="w-full h-full border rounded p-3 text-sm text-gray-700 mb-3 resize-none focus:outline-none focus:ring-2 focus:ring-zegen-blue focus:border-transparent bg-gray-50"
+                                    />
+                                    <div className="flex gap-2">
+                                        <button onClick={submitEdit} className="px-4 py-2 bg-green-500 text-white rounded font-bold text-sm shadow hover:bg-green-600 transition">Save Changes</button>
+                                        <button onClick={() => setEditingMsgId(null)} className="px-4 py-2 bg-gray-300 text-gray-700 rounded font-bold text-sm hover:bg-gray-400 transition">Cancel</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="prose max-w-none text-gray-600 leading-relaxed overflow-y-auto flex-grow mt-4">
+                                    {selectedMessage.content}
+                                </div>
+                            )}
+
+                            <div className="mt-6 pt-4 border-t border-gray-100 flex gap-2">
                                 {activeTab === 'inbox' && (
                                     <button
                                         onClick={() => setIsComposeOpen(true)}
                                         className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
                                     >
                                         <FaEnvelopeOpen /> Reply
+                                    </button>
+                                )}
+                                {activeTab === 'sent' && !editingMsgId && (
+                                    <button
+                                        onClick={startEdit}
+                                        className="px-4 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        Edit Message
                                     </button>
                                 )}
                             </div>

@@ -59,11 +59,11 @@ const AdminPrayers = () => {
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <h3 className="font-bold text-gray-800">{prayer.title}</h3>
-                                <p className="text-sm text-gray-500">{new Date(prayer.createdAt).toLocaleDateString()} by {prayer.isAnonymous ? 'Anonymous' : prayer.authorName}</p>
+                                <p className="text-sm text-gray-500">{new Date(prayer.createdAt).toLocaleDateString()} by {prayer.isAnonymous ? 'Anonymous' : prayer.name}</p>
                             </div>
                             <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded uppercase">Pending</span>
                         </div>
-                        <p className="text-gray-600 text-sm mb-6 flex-grow">{prayer.content}</p>
+                        <p className="text-gray-600 text-sm mb-6 flex-grow whitespace-pre-wrap">{prayer.request}</p>
                         <div className="flex gap-2 mt-auto border-t border-gray-100 pt-4">
                             <button onClick={() => handleApprove(prayer._id)} className="flex-1 py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded font-semibold text-sm flex items-center justify-center">
                                 <FaCheck className="mr-2" /> Approve

@@ -100,6 +100,31 @@ router.put('/:id/read', protect, async (req, res) => {
     }
 });
 
+// @route   PATCH /api/v1/messages/:id
+// @desc    Edit a message
+// @access  Private
+router.patch('/:id', protect, async (req, res) => {
+    try {
+        const message = await Message.findById(req.params.id);
+
+        if (!message) {
+            return res.status(404).json({ success: false, message: 'Message not found' });
+        }
+
+        // Only sender or admin can edit
+        if (message.sender.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'Not authorized to edit' });
+        }
+
+        message.content = req.body.content || message.content;
+        await message.save();
+
+        res.json({ success: true, message: 'Message updated', data: message });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+});
+
 // @route   DELETE /api/v1/messages/:id
 // @desc    Delete message
 // @access  Private
