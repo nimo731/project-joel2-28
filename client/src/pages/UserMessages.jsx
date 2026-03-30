@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import DashboardLayout from '../components/DashboardLayout';
-import { FaEnvelope, FaEnvelopeOpen } from 'react-icons/fa';
+import { FaEnvelope, FaReply, FaTrash, FaEdit } from 'react-icons/fa';
 import io from 'socket.io-client';
-
-import ComposeMessage from '../components/ComposeMessage';
 
 const UserMessages = () => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedMessage, setSelectedMessage] = useState(null);
-    const [isComposeOpen, setIsComposeOpen] = useState(false);
+
+    const [conversations, setConversations] = useState([]);
+    const [activeConversation, setActiveConversation] = useState(null);
+
     const [adminContact, setAdminContact] = useState(null);
-    const [editingMsgId, setEditingMsgId] = useState(null);
+    const [replyText, setReplyText] = useState('');
+    const [sendLoading, setSendLoading] = useState(false);
+
+    const [editingMsg, setEditingMsg] = useState(null);
     const [editContent, setEditContent] = useState('');
 
     const [user, setUser] = useState(() => {
@@ -21,17 +24,16 @@ const UserMessages = () => {
     });
 
     useEffect(() => {
-        // fetchMessages(); // Driven by activeTab now
         fetchUserProfile();
         fetchAdminContact();
+        fetchMessages();
 
         // Socket connection
         const socket = io(import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api/v1', '') : 'http://localhost:5001');
         socket.emit('join_user', user.id || user._id);
 
         socket.on('new_message', (data) => {
-            setMessages(prev => [data.message, ...prev]);
-            // alert(`New message from ${data.senderName || 'Admin'}`);
+            fetchMessages(); // refresh seamlessly
         });
 
         return () => socket.disconnect();
@@ -44,214 +46,348 @@ const UserMessages = () => {
                 setAdminContact(response.data.admin);
             }
         } catch (error) {
-            console.error('Failed to fetch admin contact', error);
+            console.error('Failed to fetch admin', error);
         }
     };
 
     const fetchUserProfile = async () => {
         try {
             const response = await api.get('/auth/me');
-            if (response.data && response.data.user) {
+            if (response.data?.user) {
                 setUser(response.data.user);
             }
         } catch (error) {
-            console.error('Error fetching user profile', error);
+            console.error('Error fetching profile', error);
         }
     };
 
     const fetchMessages = async () => {
         try {
-            const response = await api.get('/messages');
-            setMessages(response.data.messages || []);
-            setLoading(false);
+            setLoading(true);
+            const [inboxRes, sentRes] = await Promise.all([
+                api.get('/messages'),
+                api.get('/messages/sent')
+            ]);
+
+            const inboxMsgs = (inboxRes.data.messages || []).map(m => ({ ...m, type: 'inbox' }));
+            const sentMsgs = (sentRes.data.messages || []).map(m => ({ ...m, type: 'sent' }));
+            const allMessages = [...inboxMsgs, ...sentMsgs].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            setMessages(allMessages);
+            groupConversations(allMessages);
         } catch (error) {
             console.error('Error fetching messages', error);
-            setLoading(false);
-        }
-    };
-
-    const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'sent'
-
-    useEffect(() => {
-        if (activeTab === 'inbox') {
-            fetchMessages();
-        } else {
-            fetchSentMessages();
-        }
-    }, [activeTab]);
-
-    const fetchSentMessages = async () => {
-        setLoading(true);
-        try {
-            const response = await api.get('/messages/sent');
-            setMessages(response.data.messages || []);
-        } catch (error) {
-            console.error('Error fetching sent messages', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleRead = async (msg) => {
-        setSelectedMessage(msg);
-        if (!msg.isRead && activeTab === 'inbox') { // Only mark inbox messages as read
+    const groupConversations = (allMessages) => {
+        const convos = {};
+        allMessages.forEach(msg => {
+            const partner = msg.type === 'inbox' ? msg.sender : msg.recipient;
+            if (!partner) return;
+            const partnerId = partner._id;
+
+            if (!convos[partnerId]) {
+                convos[partnerId] = {
+                    partner,
+                    messages: [],
+                    lastMessageAt: new Date(msg.createdAt),
+                    unreadCount: 0
+                };
+            }
+            convos[partnerId].messages.push(msg);
+
+            const msgDate = new Date(msg.createdAt);
+            if (msgDate > convos[partnerId].lastMessageAt) {
+                convos[partnerId].lastMessageAt = msgDate;
+            }
+            if (msg.type === 'inbox' && !msg.isRead) {
+                convos[partnerId].unreadCount++;
+            }
+        });
+
+        const conversationList = Object.values(convos).sort((a, b) => b.lastMessageAt - a.lastMessageAt);
+        setConversations(conversationList);
+
+        // Auto-select Admin if they are the only contact and not selected yet
+        if (conversationList.length > 0 && !activeConversation) {
+            setActiveConversation(conversationList[0].partner._id);
+            // Optionally mark read
+        }
+    };
+
+    const selectConversation = async (partnerId) => {
+        setActiveConversation(partnerId);
+
+        const conv = conversations.find(c => c.partner._id === partnerId);
+        if (conv && conv.unreadCount > 0) {
+            const unreadMsgs = conv.messages.filter(m => m.type === 'inbox' && !m.isRead);
             try {
-                await api.put(`/messages/${msg._id}/read`);
-                setMessages(messages.map(m => m._id === msg._id ? { ...m, isRead: true } : m));
-            } catch (error) {
-                console.error('Failed to mark read', error);
+                await Promise.all(unreadMsgs.map(m => api.put(`/messages/${m._id}/read`)));
+                setConversations(prev => prev.map(c =>
+                    c.partner._id === partnerId
+                        ? { ...c, unreadCount: 0, messages: c.messages.map(m => m.type === 'inbox' ? { ...m, isRead: true } : m) }
+                        : c
+                ));
+            } catch (err) {
+                console.error("Failed to mark read", err);
             }
         }
     };
 
-    const startEdit = () => {
-        setEditingMsgId(selectedMessage._id);
-        setEditContent(selectedMessage.content);
+    const handleQuickReply = async (partnerId) => {
+        if (!replyText.trim()) return;
+        setSendLoading(true);
+        try {
+            await api.post('/messages', {
+                recipientId: partnerId,
+                subject: 'Message',
+                content: replyText.trim()
+            });
+            setReplyText('');
+            await fetchMessages();
+        } catch (error) {
+            alert('Failed to send message');
+        } finally {
+            setSendLoading(false);
+        }
+    };
+
+    const handleDelete = async (id, e) => {
+        if (e) e.stopPropagation();
+        if (!window.confirm('Delete this message?')) return;
+        try {
+            await api.delete(`/messages/${id}`);
+            fetchMessages();
+        } catch (error) {
+            console.error('Delete failed', error);
+        }
+    };
+
+    const startEdit = (msg, e) => {
+        if (e) e.stopPropagation();
+        setEditingMsg(msg);
+        setEditContent(msg.content);
     };
 
     const submitEdit = async () => {
         try {
-            await api.patch(`/messages/${editingMsgId}`, { content: editContent });
-            setMessages(messages.map(m => m._id === editingMsgId ? { ...m, content: editContent } : m));
-            setSelectedMessage({ ...selectedMessage, content: editContent });
-            setEditingMsgId(null);
+            await api.patch(`/messages/${editingMsg._id}`, { content: editContent });
+            setEditingMsg(null);
+            fetchMessages();
         } catch (error) {
             alert('Failed to update message');
         }
     };
 
+    // If perfectly blank and admin is fetched, show admin as a contact option
+    const renderConversations = () => {
+        let displayList = [...conversations];
+
+        // If user has NO messages yet, artificially inject the Admin so they can start a chat!
+        if (displayList.length === 0 && adminContact) {
+            displayList.push({
+                partner: adminContact,
+                messages: [],
+                lastMessageAt: new Date(),
+                unreadCount: 0,
+                isNew: true
+            });
+        }
+
+        return displayList;
+    };
+
+    const activeConvData = conversations.find(c => c.partner._id === activeConversation) ||
+        (renderConversations().find(c => c.partner._id === activeConversation));
+
+
     return (
         <DashboardLayout role="user" user={user}>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Messages</h1>
-                <button
-                    onClick={() => setIsComposeOpen(true)}
-                    disabled={!adminContact}
-                    className="bg-zegen-red text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition w-fit flex items-center gap-2"
-                >
-                    <FaEnvelope /> Contact Admin
-                </button>
+                <h1 className="text-2xl font-bold text-gray-800">Messages Workspace</h1>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-4 border-b border-gray-200 mb-6">
-                <button
-                    onClick={() => { setActiveTab('inbox'); setSelectedMessage(null); }}
-                    className={`pb-3 px-1 font-medium text-sm transition-colors relative ${activeTab === 'inbox' ? 'text-zegen-blue' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                    Inbox
-                    {activeTab === 'inbox' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-zegen-blue"></div>}
-                </button>
-                <button
-                    onClick={() => { setActiveTab('sent'); setSelectedMessage(null); }}
-                    className={`pb-3 px-1 font-medium text-sm transition-colors relative ${activeTab === 'sent' ? 'text-zegen-blue' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                    Sent
-                    {activeTab === 'sent' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-zegen-blue"></div>}
-                </button>
-            </div>
+            <div className="flex h-[calc(100vh-140px)] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-                {/* Message List */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-y-auto">
-                    {messages.length === 0 ? (
-                        <div className="p-8 text-center text-gray-500">No messages yet.</div>
-                    ) : messages.map(msg => (
-                        <div
-                            key={msg._id}
-                            onClick={() => handleRead(msg)}
-                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${selectedMessage?._id === msg._id ? 'bg-blue-50 border-l-4 border-zegen-blue' : ''} ${!msg.isRead ? 'bg-white font-semibold' : 'bg-gray-50/50 text-gray-600'}`}
-                        >
-                            <div className="flex justify-between items-start mb-1">
-                                <span className="text-sm">
-                                    {activeTab === 'inbox'
-                                        ? (msg.sender?.name || 'Admin')
-                                        : `To: ${msg.recipient?.name || 'Admin'}`}
-                                </span>
-                                <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleDateString()}</span>
+                {/* 1. Left Sidebar: Conversations List */}
+                <div className="w-1/3 md:w-1/4 border-r border-gray-200 flex flex-col bg-gray-50 flex-shrink-0">
+                    <div className="p-4 border-b border-gray-200 bg-white font-bold text-gray-700 uppercase text-xs tracking-wider flex justify-between items-center">
+                        <span>Contacts</span>
+                        <span className="bg-zegen-blue text-white rounded-full px-2 py-0.5 text-[10px]">{renderConversations().length}</span>
+                    </div>
+
+                    <div className="overflow-y-auto flex-grow scrollbar-thin scrollbar-thumb-gray-200">
+                        {loading && conversations.length === 0 ? (
+                            <div className="p-6 text-center text-gray-400 text-sm">Loading chats...</div>
+                        ) : renderConversations().map(conv => (
+                            <div
+                                key={conv.partner._id}
+                                onClick={() => selectConversation(conv.partner._id)}
+                                className={`p-4 border-b border-gray-100 cursor-pointer flex items-center gap-3 transition-colors ${activeConversation === conv.partner._id ? 'bg-blue-50/70 border-l-4 border-zegen-blue' : 'hover:bg-gray-100 border-l-4 border-transparent'}`}
+                            >
+                                <div className="w-10 h-10 rounded-full bg-zegen-blue text-white flex items-center justify-center font-bold flex-shrink-0 shadow-sm text-sm">
+                                    {conv.partner.name?.charAt(0).toUpperCase() || '?'}
+                                </div>
+                                <div className="flex-grow min-w-0">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <h4 className={`text-sm truncate ${conv.unreadCount > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>
+                                            {conv.partner.name || 'Unknown'}
+                                        </h4>
+                                        {!conv.isNew && (
+                                            <span className="text-[10px] text-gray-400 font-medium">
+                                                {new Date(conv.lastMessageAt).toLocaleDateString()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className={`text-xs truncate ${conv.unreadCount > 0 ? 'font-bold text-zegen-blue' : 'text-gray-500'}`}>
+                                        {conv.isNew ? 'Click to start chatting...' : conv.messages[conv.messages.length - 1]?.content}
+                                    </p>
+                                </div>
+                                {conv.unreadCount > 0 && (
+                                    <div className="w-5 h-5 rounded-full bg-zegen-red text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 shadow-sm">
+                                        {conv.unreadCount}
+                                    </div>
+                                )}
                             </div>
-                            <div className="text-sm truncate mb-1">{msg.subject}</div>
-                            <div className="text-xs text-gray-400 truncate">{msg.content}</div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
-                {/* Message Detail */}
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex flex-col">
-                    {selectedMessage ? (
+                {/* 2. Right Panel: Chat Area */}
+                <div className="w-2/3 md:w-3/4 flex flex-col bg-[#e5ddd5] relative">
+                    {activeConvData ? (
                         <>
-                            <div className="border-b border-gray-100 pb-4 mb-4">
-                                <h2 className="text-xl font-bold text-gray-800 mb-2">{selectedMessage.subject}</h2>
-                                <div className="flex justify-between items-center text-sm text-gray-500">
-                                    <span>
-                                        {activeTab === 'inbox' ? 'From: ' : 'To: '}
-                                        <span className="font-semibold text-gray-700">
-                                            {activeTab === 'inbox' ? (selectedMessage.sender?.name || 'Admin') : (selectedMessage.recipient?.name || 'Admin')}
-                                        </span>
-                                    </span>
-                                    <span>{new Date(selectedMessage.createdAt).toLocaleString()}</span>
+                            {/* Chat Header */}
+                            <div className="p-3 border-b border-gray-200 bg-white flex items-center justify-between shadow-sm z-10 sticky top-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold shadow-sm">
+                                        {activeConvData.partner.name?.charAt(0).toUpperCase() || '?'}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800 text-sm leading-tight">{activeConvData.partner.name || 'Unknown'}</h3>
+                                        <p className="text-[10px] font-bold text-green-500 uppercase">Available</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            {editingMsgId === selectedMessage._id ? (
-                                <div className="flex-grow flex flex-col mt-4">
-                                    <textarea
-                                        value={editContent}
-                                        onChange={(e) => setEditContent(e.target.value)}
-                                        className="w-full h-full border rounded p-3 text-sm text-gray-700 mb-3 resize-none focus:outline-none focus:ring-2 focus:ring-zegen-blue focus:border-transparent bg-gray-50"
-                                    />
-                                    <div className="flex gap-2">
-                                        <button onClick={submitEdit} className="px-4 py-2 bg-green-500 text-white rounded font-bold text-sm shadow hover:bg-green-600 transition">Save Changes</button>
-                                        <button onClick={() => setEditingMsgId(null)} className="px-4 py-2 bg-gray-300 text-gray-700 rounded font-bold text-sm hover:bg-gray-400 transition">Cancel</button>
+                            {/* Chat Messages */}
+                            <div className="flex-grow p-4 md:p-6 overflow-y-auto flex flex-col gap-3 scrollbar-thin scrollbar-thumb-gray-300">
+                                {activeConvData.messages.length === 0 && (
+                                    <div className="bg-yellow-50 text-yellow-800 text-xs text-center p-2 rounded-lg shadow-sm mx-auto my-4 max-w-sm border border-yellow-200">
+                                        Messages are end-to-end secured. Start a conversation with the Administrator to get help or guidance safely.
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="prose max-w-none text-gray-600 leading-relaxed overflow-y-auto flex-grow mt-4">
-                                    {selectedMessage.content}
-                                </div>
-                            )}
+                                )}
 
-                            <div className="mt-6 pt-4 border-t border-gray-100 flex gap-2">
-                                {activeTab === 'inbox' && (
-                                    <button
-                                        onClick={() => setIsComposeOpen(true)}
-                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+                                {activeConvData.messages.map(msg => (
+                                    <div
+                                        key={msg._id}
+                                        className={`group max-w-[85%] md:max-w-[70%] flex flex-col relative ${msg.type === 'sent' ? 'self-end' : 'self-start'}`}
                                     >
-                                        <FaEnvelopeOpen /> Reply
-                                    </button>
-                                )}
-                                {activeTab === 'sent' && !editingMsgId && (
-                                    <button
-                                        onClick={startEdit}
-                                        className="px-4 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                        Edit Message
-                                    </button>
-                                )}
+
+                                        {/* Action buttons (hidden on default, reveal on hover) */}
+                                        <div className={`absolute top-0 -mt-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 ${msg.type === 'sent' ? '-left-16' : '-right-10'}`}>
+                                            {msg.type === 'sent' && editingMsg?._id !== msg._id && (
+                                                <button
+                                                    onClick={(e) => startEdit(msg, e)}
+                                                    className="p-1.5 text-gray-500 hover:text-zegen-blue bg-white rounded-full shadow-md border border-gray-100"
+                                                    title="Edit Message"
+                                                >
+                                                    <FaEdit className="w-3 h-3" />
+                                                </button>
+                                            )}
+                                            {/* Users likely shouldn't hard-delete messages from thread arbitrarily unless required, but let's leave it per previous spec */}
+                                            <button
+                                                onClick={(e) => handleDelete(msg._id, e)}
+                                                className="p-1.5 text-gray-500 hover:text-red-500 bg-white rounded-full shadow-md border border-gray-100"
+                                                title="Delete Message"
+                                            >
+                                                <FaTrash className="w-3 h-3" />
+                                            </button>
+                                        </div>
+
+                                        <div className={`px-4 py-2.5 rounded-xl shadow-sm ${msg.type === 'sent'
+                                                ? 'bg-[#dcf8c6] text-gray-900 rounded-tr-sm'
+                                                : 'bg-white text-gray-900 rounded-tl-sm border border-gray-100'
+                                            }`} style={{ minWidth: '150px' }}>
+
+                                            {/* Subj line only if it's not a generic quick reply */}
+                                            {msg.subject && !msg.subject.startsWith('Message') && !msg.subject.startsWith('Re: Message') && (
+                                                <div className={`text-[10px] font-bold mb-1 uppercase tracking-wide opacity-60`}>
+                                                    Title: {msg.subject}
+                                                </div>
+                                            )}
+
+                                            {/* Body */}
+                                            {editingMsg && editingMsg._id === msg._id ? (
+                                                <div className="flex flex-col gap-2 min-w-[200px] mt-1">
+                                                    <textarea
+                                                        value={editContent}
+                                                        onChange={(e) => setEditContent(e.target.value)}
+                                                        className="w-full text-sm text-gray-800 bg-white border border-gray-200 rounded p-2 focus:ring-1 focus:ring-zegen-blue outline-none resize-none"
+                                                        rows="3"
+                                                        autoFocus
+                                                    />
+                                                    <div className="flex gap-2 self-end">
+                                                        <button onClick={submitEdit} className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded">Save</button>
+                                                        <button onClick={() => setEditingMsg(null)} className="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white text-xs font-bold rounded">Cancel</button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">
+                                                    {msg.content}
+                                                </div>
+                                            )}
+
+                                            <div className={`text-[10px] text-right mt-1 opacity-60 flex justify-end items-center gap-1`}>
+                                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Sticky Input Bar */}
+                            <div className="p-3 bg-[#f0f0f0] flex items-end gap-2 z-10 sticky bottom-0 border-t border-gray-200">
+                                <div className="flex-grow bg-white rounded-full shadow-sm flex items-center pr-2 py-1">
+                                    <textarea
+                                        value={replyText}
+                                        onChange={(e) => setReplyText(e.target.value)}
+                                        placeholder="Type a message..."
+                                        className="flex-grow bg-transparent border-none rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-0 resize-none"
+                                        rows="1"
+                                        style={{ minHeight: '40px', maxHeight: '120px' }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleQuickReply(activeConvData.partner._id);
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => handleQuickReply(activeConvData.partner._id)}
+                                    disabled={!replyText.trim() || sendLoading}
+                                    className="w-10 h-10 rounded-full bg-zegen-blue text-white flex items-center justify-center hover:bg-blue-700 transition disabled:opacity-50 flex-shrink-0 shadow-md"
+                                >
+                                    <FaReply className="transform -scale-x-100 w-4 h-4 ml-[-2px]" />
+                                </button>
                             </div>
                         </>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                            <FaEnvelopeOpen className="text-6xl mb-4 text-gray-200" />
-                            <p>Select a message to read</p>
+                        <div className="flex-grow flex flex-col items-center justify-center text-gray-500 bg-[#f0f2f5]">
+                            <div className="w-24 h-24 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 transition-transform hover:scale-105">
+                                <FaEnvelope className="text-4xl text-gray-300" />
+                            </div>
+                            <p className="text-lg font-light text-gray-600">Joel 2:28 Connect</p>
+                            <p className="text-sm">Select a contact to message the Administrator</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {adminContact && (
-                <ComposeMessage
-                    isOpen={isComposeOpen}
-                    onClose={() => setIsComposeOpen(false)}
-                    recipient={adminContact}
-                    onSendSuccess={() => {
-                        alert('Message sent to Admin!');
-                        setActiveTab('sent');
-                        fetchSentMessages();
-                    }}
-                />
-            )}
         </DashboardLayout>
     );
 };
