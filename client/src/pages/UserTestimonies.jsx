@@ -43,13 +43,20 @@ const UserTestimonies = () => {
 
     return (
         <DashboardLayout role="user" user={user}>
-            <div className="max-w-2xl mx-auto">
-                <div className="mb-8 text-center">
-                    <div className="w-16 h-16 bg-blue-100 text-zegen-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaQuoteLeft size={24} />
+            <div className="max-w-3xl mx-auto pb-12">
+                <div className="mb-8 text-center bg-gradient-to-br from-zegen-blue to-blue-900 text-white rounded-[2rem] p-10 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-zegen-red opacity-10 rounded-full blur-2xl transform -translate-x-1/2 translate-y-1/2"></div>
+
+                    <div className="relative z-10">
+                        <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-6 border border-white/20 shadow-inner">
+                            <FaQuoteLeft size={32} className="text-white drop-shadow-md" />
+                        </div>
+                        <h1 className="text-4xl font-extrabold mb-4 drop-shadow-sm font-serif tracking-tight">Share Your Testimony</h1>
+                        <p className="text-blue-100 text-lg max-w-lg mx-auto font-medium leading-relaxed">
+                            Your story carries the power to inspire thousands. Share what God has done in your life.
+                        </p>
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-800">Share Your Testimony</h1>
-                    <p className="text-gray-500 mt-2">Your story can inspire thousands. Share what God has done in your life.</p>
                 </div>
 
                 {error && (
@@ -66,25 +73,25 @@ const UserTestimonies = () => {
                         <p className="mt-4 text-sm font-medium">Redirecting to dashboard...</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden relative z-10 -mt-6 mx-2 sm:mx-8">
+                        <form onSubmit={handleSubmit} className="p-8 sm:p-10 space-y-7">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Title</label>
+                                <label className="block text-xs font-bold text-zegen-blue uppercase tracking-widest mb-3">Title of your story</label>
                                 <input
                                     type="text"
                                     required
                                     placeholder="e.g., Healed from Chronic Pain"
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-zegen-blue focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                    className="w-full px-5 py-4 bg-gray-50 rounded-xl border border-gray-200 focus:bg-white focus:border-zegen-blue focus:ring-4 focus:ring-blue-50 outline-none transition-all text-gray-800 font-medium placeholder-gray-400"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Category</label>
+                                    <label className="block text-xs font-bold text-zegen-blue uppercase tracking-widest mb-3">Category</label>
                                     <select
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-zegen-blue focus:ring-2 focus:ring-blue-200 outline-none transition-all appearance-none bg-white"
+                                        className="w-full px-5 py-4 bg-gray-50 rounded-xl border border-gray-200 focus:bg-white focus:border-zegen-blue focus:ring-4 focus:ring-blue-50 outline-none transition-all appearance-none font-medium text-gray-800"
                                         value={category}
                                         onChange={(e) => setCategory(e.target.value)}
                                     >
@@ -97,26 +104,26 @@ const UserTestimonies = () => {
                                     </select>
                                 </div>
                                 <div className="flex items-center pt-8">
-                                    <label className="relative inline-flex items-center cursor-pointer">
+                                    <label className="relative inline-flex items-center cursor-pointer group">
                                         <input
                                             type="checkbox"
                                             className="sr-only peer"
                                             checked={isAnonymous}
                                             onChange={() => setIsAnonymous(!isAnonymous)}
                                         />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zegen-blue"></div>
-                                        <span className="ml-3 text-sm font-medium text-gray-700">Share Anonymously</span>
+                                        <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-zegen-blue shadow-inner"></div>
+                                        <span className="ml-4 text-sm font-bold text-gray-600 group-hover:text-zegen-blue transition-colors">Share Anonymously</span>
                                     </label>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Your Story</label>
+                                <label className="block text-xs font-bold text-zegen-blue uppercase tracking-widest mb-3">Your Journey</label>
                                 <textarea
                                     required
                                     rows="8"
-                                    placeholder="Tell us what happened..."
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-zegen-blue focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+                                    placeholder="Pour your heart out here..."
+                                    className="w-full px-5 py-4 bg-gray-50 rounded-xl border border-gray-200 focus:bg-white focus:border-zegen-blue focus:ring-4 focus:ring-blue-50 outline-none transition-all resize-none text-gray-800 font-medium placeholder-gray-400 leading-relaxed"
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                 ></textarea>

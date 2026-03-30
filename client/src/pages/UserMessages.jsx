@@ -257,7 +257,7 @@ const UserMessages = () => {
                 </div>
 
                 {/* 2. Right Panel: Chat Area */}
-                <div className="w-2/3 md:w-3/4 flex flex-col bg-[#e5ddd5] relative">
+                <div className="w-2/3 md:w-3/4 flex flex-col bg-[#f8fbff] relative">
                     {activeConvData ? (
                         <>
                             {/* Chat Header */}
@@ -308,15 +308,15 @@ const UserMessages = () => {
                                             </button>
                                         </div>
 
-                                        <div className={`px-4 py-2.5 rounded-xl shadow-sm ${msg.type === 'sent'
-                                                ? 'bg-[#dcf8c6] text-gray-900 rounded-tr-sm'
-                                                : 'bg-white text-gray-900 rounded-tl-sm border border-gray-100'
+                                        <div className={`px-5 py-3.5 rounded-2xl shadow-sm border ${msg.type === 'sent'
+                                            ? 'bg-zegen-blue text-white rounded-tr-sm border-zegen-blue'
+                                            : 'bg-white text-gray-800 rounded-tl-sm border-gray-100'
                                             }`} style={{ minWidth: '150px' }}>
 
                                             {/* Subj line only if it's not a generic quick reply */}
                                             {msg.subject && !msg.subject.startsWith('Message') && !msg.subject.startsWith('Re: Message') && (
-                                                <div className={`text-[10px] font-bold mb-1 uppercase tracking-wide opacity-60`}>
-                                                    Title: {msg.subject}
+                                                <div className={`text-[10px] font-bold mb-1 opacity-70 tracking-wide uppercase ${msg.type === 'sent' ? 'text-blue-200' : 'text-gray-500'}`}>
+                                                    Subject: {msg.subject}
                                                 </div>
                                             )}
 
@@ -350,8 +350,8 @@ const UserMessages = () => {
                             </div>
 
                             {/* Sticky Input Bar */}
-                            <div className="p-3 bg-[#f0f0f0] flex items-end gap-2 z-10 sticky bottom-0 border-t border-gray-200">
-                                <div className="flex-grow bg-white rounded-full shadow-sm flex items-center pr-2 py-1">
+                            <div className="p-3 bg-white flex items-end gap-3 z-10 sticky bottom-0 border-t border-gray-100 shadow-[0_-4px_15px_rgba(0,0,0,0.02)]">
+                                <div className="flex-grow bg-[#f0f4f8] rounded-3xl flex items-center pr-2 py-1">
                                     <textarea
                                         value={replyText}
                                         onChange={(e) => setReplyText(e.target.value)}
@@ -377,12 +377,12 @@ const UserMessages = () => {
                             </div>
                         </>
                     ) : (
-                        <div className="flex-grow flex flex-col items-center justify-center text-gray-500 bg-[#f0f2f5]">
-                            <div className="w-24 h-24 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 transition-transform hover:scale-105">
-                                <FaEnvelope className="text-4xl text-gray-300" />
+                        <div className="flex-grow flex flex-col items-center justify-center text-gray-400 bg-[#f8fbff]">
+                            <div className="w-24 h-24 rounded-full bg-blue-50/50 shadow-inner flex items-center justify-center mb-6 border border-blue-100 transition-transform hover:scale-105">
+                                <svg className="w-10 h-10 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                             </div>
-                            <p className="text-lg font-light text-gray-600">Joel 2:28 Connect</p>
-                            <p className="text-sm">Select a contact to message the Administrator</p>
+                            <p className="text-xl font-bold text-gray-700 tracking-tight font-serif">Joel 2:28 Connection</p>
+                            <p className="text-sm text-gray-500 mt-2 font-medium">Select a contact to message the Administrator</p>
                         </div>
                     )}
                 </div>
