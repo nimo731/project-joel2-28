@@ -31,13 +31,22 @@ router.get('/', async (req, res) => {
     const limit = parseInt(req.query.limit) || 12; // Standard grid size
     const skip = (page - 1) * limit;
 
-    const [sermons, total] = await Promise.all([
-      Sermon.find({ isPublished: true })
-        .sort({ date: -1 })
-        .skip(skip)
-        .limit(limit),
-      Sermon.countDocuments({ isPublished: true })
-    ]);
+    let sermons, total;
+    if (req.app.locals.isDbConnected) {
+      [sermons, total] = await Promise.all([
+        Sermon.find({ isPublished: true })
+          .sort({ date: -1 })
+          .skip(skip)
+          .limit(limit),
+        Sermon.countDocuments({ isPublished: true })
+      ]);
+    } else {
+      const filtered = req.app.locals.storage.sermons
+        .filter(s => s.isPublished)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      sermons = filtered.slice(skip, skip + limit);
+      total = filtered.length;
+    }
 
     res.json({
       success: true,

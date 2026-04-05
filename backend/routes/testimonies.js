@@ -77,7 +77,7 @@ router.get('/', async (req, res) => {
         const skip = (page - 1) * limit;
 
         let resultData;
-        if (process.env.MONGODB_URI) {
+        if (req.app.locals.isDbConnected) {
             const [testimonies, total] = await Promise.all([
                 Testimony.find({ isApproved: true })
                     .populate('userId', 'name profileImage')
@@ -182,9 +182,14 @@ router.post('/:id/like', auth, async (req, res) => {
 // @access  Admin
 router.get('/admin', auth, adminAuth, async (req, res) => {
     try {
-        const testimonies = await Testimony.find()
-            .populate('userId', 'name email profileImage')
-            .sort({ createdAt: -1 });
+        let testimonies;
+        if (req.app.locals.isDbConnected) {
+            testimonies = await Testimony.find()
+                .populate('userId', 'name email profileImage')
+                .sort({ createdAt: -1 });
+        } else {
+            testimonies = req.app.locals.storage.testimonies.sort((a, b) => b.createdAt - a.createdAt);
+        }
         res.json({ success: true, testimonies });
     } catch (error) {
         console.error('Admin get testimonies error:', error);

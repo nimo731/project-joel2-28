@@ -86,13 +86,15 @@ const inMemoryStorage = {
   prayers: [],
   testimonies: [],
   users: [],
+  sermons: [],
+  events: [],
   prayerCounts: {}
 };
 
 // Seed initial admins if provided in env or default
 const adminsToSeed = [
   { email: 'admin@joel228.com', password: 'Joel228@Admin2025', name: 'System Admin' },
-  { email: 'patiencekaranjah@gmail.com', password: 'Joel228@Admin2025', name: 'Patience Karanjah' },
+  { email: 'patiencekaranjah@gmail.com', password: 'makeit&shineo6', name: 'Patience Karanjah' },
   { email: 'jameskinyanjui@gmail.com', password: 'Joel228@Admin2025', name: 'James Kinyanjui' }
 ];
 

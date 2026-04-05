@@ -20,26 +20,39 @@ const adminAuth = [auth.auth, auth.adminAuth];
 // @access  Admin
 router.get('/dashboard', adminAuth, async (req, res) => {
     try {
-        const [
-            totalUsers,
-            totalPrayers,
-            totalSermons,
-            totalEvents,
-            upcomingEvents,
-            totalTestimonies,
-            pendingTestimonies
-        ] = await Promise.all([
-            User.countDocuments(),
-            PrayerRequest.countDocuments(),
-            Sermon.countDocuments(),
-            Event.countDocuments(),
-            Event.find({ date: { $gte: new Date() } })
-                .sort({ date: 1 })
-                .limit(5)
-                .select('title date'),
-            Testimony.countDocuments(),
-            Testimony.countDocuments({ isApproved: false })
-        ]);
+        let totalUsers, totalPrayers, totalSermons, totalEvents, upcomingEvents, totalTestimonies, pendingTestimonies;
+
+        if (req.app.locals.isDbConnected) {
+            [
+                totalUsers,
+                totalPrayers,
+                totalSermons,
+                totalEvents,
+                upcomingEvents,
+                totalTestimonies,
+                pendingTestimonies
+            ] = await Promise.all([
+                User.countDocuments(),
+                PrayerRequest.countDocuments(),
+                Sermon.countDocuments(),
+                Event.countDocuments(),
+                Event.find({ date: { $gte: new Date() } })
+                    .sort({ date: 1 })
+                    .limit(5)
+                    .select('title date'),
+                Testimony.countDocuments(),
+                Testimony.countDocuments({ isApproved: false })
+            ]);
+        } else {
+            const storage = req.app.locals.storage;
+            totalUsers = storage.users.length;
+            totalPrayers = storage.prayers.length;
+            totalSermons = storage.sermons.length;
+            totalEvents = storage.events.length;
+            upcomingEvents = storage.events.filter(e => e.date >= new Date()).slice(0, 5);
+            totalTestimonies = storage.testimonies.length;
+            pendingTestimonies = storage.testimonies.filter(t => !t.isApproved).length;
+        }
 
         res.json({
             success: true,
@@ -65,7 +78,12 @@ router.get('/dashboard', adminAuth, async (req, res) => {
 // @access  Admin
 router.get('/prayers', adminAuth, async (req, res) => {
     try {
-        const prayers = await PrayerRequest.find().sort({ createdAt: -1 });
+        let prayers;
+        if (req.app.locals.isDbConnected) {
+            prayers = await PrayerRequest.find().sort({ createdAt: -1 });
+        } else {
+            prayers = req.app.locals.storage.prayers.sort((a, b) => b.createdAt - a.createdAt);
+        }
         res.json({ success: true, prayers });
     } catch (error) {
         console.error('Error fetching prayers:', error);
@@ -139,7 +157,12 @@ router.delete('/prayers/:id', adminAuth, async (req, res) => {
 // @access  Admin
 router.get('/sermons', adminAuth, async (req, res) => {
     try {
-        const sermons = await Sermon.find().sort({ date: -1 });
+        let sermons;
+        if (req.app.locals.isDbConnected) {
+            sermons = await Sermon.find().sort({ date: -1 });
+        } else {
+            sermons = req.app.locals.storage.sermons.sort((a, b) => b.date - a.date);
+        }
         res.json({ success: true, sermons });
     } catch (error) {
         console.error('Error fetching sermons:', error);
@@ -264,7 +287,12 @@ router.delete('/sermons/:id', adminAuth, async (req, res) => {
 // @access  Admin
 router.get('/events', adminAuth, async (req, res) => {
     try {
-        const events = await Event.find().sort({ date: 1 });
+        let events;
+        if (req.app.locals.isDbConnected) {
+            events = await Event.find().sort({ date: 1 });
+        } else {
+            events = req.app.locals.storage.events.sort((a, b) => a.date - b.date);
+        }
         res.json({ success: true, events });
     } catch (error) {
         console.error('Error fetching events:', error);
@@ -464,7 +492,17 @@ router.put('/events/:id/meet-link', adminAuth, async (req, res) => {
 // @access  Admin
 router.get('/users', adminAuth, async (req, res) => {
     try {
-        const users = await User.find().select('-password');
+        let users;
+        if (req.app.locals.isDbConnected) {
+            users = await User.find().select('-password');
+        } else {
+            users = req.app.locals.storage.users.map(u => {
+                const userClone = { ...u };
+                delete userClone.password;
+                delete userClone.adminPassword;
+                return userClone;
+            });
+        }
         res.json({ success: true, users });
     } catch (error) {
         console.error('Error fetching users:', error);

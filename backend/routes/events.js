@@ -10,25 +10,41 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const { upcoming, past } = req.query;
-        let query = { isPublished: true };
-
-        if (upcoming === 'true') {
-            query.date = { $gte: new Date() };
-        } else if (past === 'true') {
-            query.date = { $lt: new Date() };
-        }
-
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const [events, total] = await Promise.all([
-            Event.find(query)
-                .sort({ date: 1 })
-                .skip(skip)
-                .limit(limit),
-            Event.countDocuments(query)
-        ]);
+        let events, total;
+
+        if (req.app.locals.isDbConnected) {
+            let query = { isPublished: true };
+            if (upcoming === 'true') {
+                query.date = { $gte: new Date() };
+            } else if (past === 'true') {
+                query.date = { $lt: new Date() };
+            }
+
+            [events, total] = await Promise.all([
+                Event.find(query)
+                    .sort({ date: 1 })
+                    .skip(skip)
+                    .limit(limit),
+                Event.countDocuments(query)
+            ]);
+        } else {
+            const storage = req.app.locals.storage;
+            let filtered = storage.events.filter(e => e.isPublished);
+
+            if (upcoming === 'true') {
+                filtered = filtered.filter(e => new Date(e.date) >= new Date());
+            } else if (past === 'true') {
+                filtered = filtered.filter(e => new Date(e.date) < new Date());
+            }
+
+            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            events = filtered.slice(skip, skip + limit);
+            total = filtered.length;
+        }
 
         res.json({
             success: true,
