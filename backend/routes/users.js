@@ -10,8 +10,14 @@ const router = express.Router();
 // @access  Private
 router.get('/profile', auth, async (req, res) => {
     try {
-        // Use req.user._id since auth middleware sets full user object
-        const user = await User.findById(req.user._id).select('-password');
+        let user;
+        if (req.app.locals.isDbConnected) {
+            user = await User.findById(req.user._id).select('-password');
+        } else {
+            const storage = req.app.locals.storage;
+            user = storage.users.find(u => u.id === req.user._id || u._id === req.user._id);
+        }
+
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
@@ -167,7 +173,13 @@ router.post('/profile/photo', auth, upload.single('profileImage'), async (req, r
 // @access  Private
 router.get('/admin-contact', auth, async (req, res) => {
     try {
-        const admin = await User.findOne({ role: 'admin' }).select('name email _id');
+        let admin;
+        if (req.app.locals.isDbConnected) {
+            admin = await User.findOne({ role: 'admin' }).select('name email _id');
+        } else {
+            admin = req.app.locals.storage.users.find(u => u.role === 'admin');
+        }
+
         if (!admin) {
             return res.status(404).json({ success: false, message: 'Admin not found' });
         }

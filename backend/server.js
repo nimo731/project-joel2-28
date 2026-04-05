@@ -21,8 +21,12 @@ const logKey = (name) => {
 logKey('CLOUDINARY_CLOUD_NAME');
 logKey('CLOUDINARY_API_KEY');
 logKey('CLOUDINARY_API_SECRET');
+logKey('MONGODB_URI');
 if (process.env.CLOUDINARY_APT_KEY) console.log('CLOUDINARY_APT_KEY: ✅ detected (aliased to API_KEY)');
 console.log('---------------------------------');
+
+// Disable command buffering so it fails fast if DB is down (needed for reliable in-memory fallback)
+mongoose.set('bufferCommands', false);
 
 const app = express();
 
@@ -85,17 +89,77 @@ const inMemoryStorage = {
   prayerCounts: {}
 };
 
-// Database connection
-if (process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('🔥 Connected to MongoDB - THE JOEL 2:28 GENERATION'))
-    .catch(err => {
-      console.error('❌ MongoDB connection error:', err.message);
-      console.log('⚠️ Falling back to in-memory storage due to connection failure');
-    });
-} else {
-  console.log('⚠️ Running with in-memory storage (set MONGODB_URI for production)');
+// Seed initial admins if provided in env or default
+const adminsToSeed = [
+  { email: 'admin@joel228.com', password: 'Joel228@Admin2025', name: 'System Admin' },
+  { email: 'patiencekaranjah@gmail.com', password: 'Joel228@Admin2025', name: 'Patience Karanjah' },
+  { email: 'jameskinyanjui@gmail.com', password: 'Joel228@Admin2025', name: 'James Kinyanjui' }
+];
+
+if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+  adminsToSeed.push({
+    email: process.env.ADMIN_EMAIL.trim(),
+    password: process.env.ADMIN_PASSWORD.trim(),
+    name: 'Env seeded Admin'
+  });
 }
+
+adminsToSeed.forEach(admin => {
+  if (!inMemoryStorage.users.find(u => u.email === admin.email)) {
+    inMemoryStorage.users.push({
+      id: `seed_${admin.email.split('@')[0]}`,
+      name: admin.name,
+      email: admin.email,
+      password: admin.password,
+      adminPassword: admin.password,
+      role: 'admin',
+      isActive: true,
+      createdAt: new Date(),
+      lastLogin: null
+    });
+  }
+});
+console.log(`👤 Seeded ${adminsToSeed.length} admin accounts into memory for fallback.`);
+
+// Track DB status dynamically
+app.locals.isDbConnected = false;
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB connection established');
+  app.locals.isDbConnected = true;
+});
+mongoose.connection.on('disconnected', () => {
+  console.log('❌ MongoDB connection lost');
+  app.locals.isDbConnected = false;
+});
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB connection error event:', err.message);
+  app.locals.isDbConnected = false;
+});
+
+// Database connection
+const connectDB = async () => {
+  if (process.env.MONGODB_URI) {
+    try {
+      console.log('⏳ Connecting to MongoDB...');
+      await mongoose.connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000, // 5 seconds timeout for faster failover
+        socketTimeoutMS: 45000,
+        family: 4
+      });
+      console.log('🔥 Connected to MongoDB - THE JOEL 2:28 GENERATION');
+      app.locals.isDbConnected = true;
+      return true;
+    } catch (err) {
+      console.error('❌ MongoDB initial connection error:', err.message);
+      app.locals.isDbConnected = false;
+      return false;
+    }
+  } else {
+    console.log('⚠️ Running with in-memory storage (set MONGODB_URI for production)');
+    app.locals.isDbConnected = false;
+    return true;
+  }
+};
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -196,7 +260,22 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5000;
 
-httpServer.listen(PORT, () => {
-  console.log(`🚀 THE JOEL 2:28 GENERATION API server running on port ${PORT}`);
-  console.log(`📖 Scripture: "And it shall come to pass afterward, that I will pour out my spirit upon all flesh" - Joel 2:28`);
-});
+const startServer = async () => {
+  const dbConnected = await connectDB();
+
+  if (!dbConnected && process.env.NODE_ENV === 'production') {
+    console.error('CRITICAL: Could not connect to database in production. Exiting.');
+    // In production, we might want to exit if DB is essential
+    // process.exit(1); 
+  }
+
+  httpServer.listen(PORT, () => {
+    console.log(`🚀 THE JOEL 2:28 GENERATION API server running on port ${PORT}`);
+    console.log(`📖 Scripture: "And it shall come to pass afterward, that I will pour out my spirit upon all flesh" - Joel 2:28`);
+    if (!dbConnected) {
+      console.log('⚠️ SERVER STARTED WITH IN-MEMORY STORAGE (DATABASE DISCONNECTED)');
+    }
+  });
+};
+
+startServer();

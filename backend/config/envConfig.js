@@ -21,6 +21,13 @@ const normalizeEnv = () => {
         }
     });
 
+    // MONGODB_URI SAFETY CHECK: Detect literal placeholders
+    const uri = process.env.MONGODB_URI;
+    if (uri && (uri.includes('<password>') || uri.includes('<username>') || uri.includes('<db_password>'))) {
+        console.warn('CRITICAL WARNING: MONGODB_URI appears to contain literal placeholders like <password>.');
+        console.warn('Please replace these with your actual credentials in your environment configuration.');
+    }
+
     // POWER FIX: Automatically alias typos
     if (process.env.EMAIL_PASS && !process.env.EMAIL_PASSWORD) {
         process.env.EMAIL_PASSWORD = process.env.EMAIL_PASS;

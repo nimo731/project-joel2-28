@@ -33,7 +33,7 @@ router.post('/register', [
 
         // Check if user already exists (in-memory or MongoDB)
         let existingUser;
-        if (process.env.MONGODB_URI) {
+        if (req.app.locals.isDbConnected) {
             existingUser = await User.findOne({ email });
         } else {
             existingUser = storage.users.find(u => u.email === email);
@@ -48,7 +48,7 @@ router.post('/register', [
 
         // Use MongoDB if available, otherwise use in-memory storage
         let userPayload;
-        if (process.env.MONGODB_URI) {
+        if (req.app.locals.isDbConnected) {
             userPayload = {
                 name: fullName,
                 email,
@@ -131,7 +131,7 @@ router.post('/login', [
 
         // Find user by email (in-memory or MongoDB)
         let user;
-        if (process.env.MONGODB_URI) {
+        if (req.app.locals.isDbConnected) {
             user = await User.findOne({ email });
         } else {
             user = storage.users.find(u => u.email === email);
@@ -154,7 +154,7 @@ router.post('/login', [
 
         // Verify password (simplified for in-memory storage)
         let isMatch;
-        if (process.env.MONGODB_URI) {
+        if (req.app.locals.isDbConnected) {
             isMatch = await user.comparePassword(password);
         } else {
             isMatch = user.password === password; // In production, use proper hashing
@@ -169,7 +169,7 @@ router.post('/login', [
 
         // Update last login
         user.lastLogin = new Date();
-        if (process.env.MONGODB_URI) {
+        if (req.app.locals.isDbConnected) {
             await user.save();
         }
 
@@ -207,7 +207,14 @@ router.post('/login', [
 // @access  Private
 router.get('/me', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId).select('-password');
+        let user;
+        if (req.app.locals.isDbConnected) {
+            user = await User.findById(req.user.userId).select('-password');
+        } else {
+            const storage = req.app.locals.storage;
+            user = storage.users.find(u => u.id === req.user.userId || u._id === req.user.userId);
+        }
+
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -247,7 +254,14 @@ router.post('/forgot-password', [
 ], async (req, res) => {
     try {
         const { email } = req.body;
-        const user = await User.findOne({ email });
+        let user;
+
+        if (req.app.locals.isDbConnected) {
+            user = await User.findOne({ email });
+        } else {
+            const storage = req.app.locals.storage;
+            user = storage.users.find(u => u.email === email);
+        }
 
         if (!user) {
             // Return success even if user not found for security (prevent email enumeration)
@@ -258,8 +272,11 @@ router.post('/forgot-password', [
         }
 
         // Create reset token
-        const resetToken = user.createPasswordResetToken();
-        await user.save({ validateBeforeSave: false });
+        const resetToken = req.app.locals.isDbConnected ? user.createPasswordResetToken() : crypto.randomBytes(32).toString('hex');
+
+        if (req.app.locals.isDbConnected) {
+            await user.save({ validateBeforeSave: false });
+        }
 
         // Send reset email
         try {
@@ -297,10 +314,19 @@ router.post('/reset-password/:token', [
             .update(req.params.token)
             .digest('hex');
 
-        const user = await User.findOne({
-            resetPasswordToken,
-            resetPasswordExpires: { $gt: Date.now() }
-        });
+        let user;
+        if (req.app.locals.isDbConnected) {
+            user = await User.findOne({
+                resetPasswordToken,
+                resetPasswordExpires: { $gt: Date.now() }
+            });
+        } else {
+            const storage = req.app.locals.storage;
+            user = storage.users.find(u =>
+                u.resetPasswordToken === resetPasswordToken &&
+                u.resetPasswordExpires > Date.now()
+            );
+        }
 
         if (!user) {
             return res.status(400).json({
@@ -313,7 +339,11 @@ router.post('/reset-password/:token', [
         user.password = req.body.password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
-        await user.save();
+
+        if (req.app.locals.isDbConnected) {
+            await user.save();
+        }
+        // In-memory doesn't need explicit save as we modified the object reference
 
         res.json({
             success: true,

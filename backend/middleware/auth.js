@@ -16,7 +16,13 @@ const auth = async (req, res, next) => {
         try {
             const secret = process.env.JWT_SECRET?.trim() || 'joel228generation_secret';
             const decoded = jwt.verify(token, secret);
-            const user = await User.findById(decoded.id || decoded.userId);
+            let user;
+            if (req.app.locals.isDbConnected) {
+                user = await User.findById(decoded.id || decoded.userId);
+            } else {
+                const storage = req.app.locals.storage;
+                user = storage.users.find(u => u.id === (decoded.id || decoded.userId) || u._id === (decoded.id || decoded.userId));
+            }
 
             if (!user || user.isActive === false) {
                 throw new Error('User not found or inactive');
@@ -24,14 +30,20 @@ const auth = async (req, res, next) => {
 
             // Set both the full user object and userId for compatibility
             req.user = user;
-            req.user.userId = user._id;
+            req.user.userId = user._id || user.id;
             return next();
         } catch (err) {
             // If first attempt fails, try with admin JWT secret
             try {
                 const adminSecret = process.env.JWT_ADMIN_SECRET?.trim() || 'joel228admin_secret';
                 const decoded = jwt.verify(token, adminSecret);
-                const user = await User.findById(decoded.id || decoded.userId);
+                let user;
+                if (req.app.locals.isDbConnected) {
+                    user = await User.findById(decoded.id || decoded.userId);
+                } else {
+                    const storage = req.app.locals.storage;
+                    user = storage.users.find(u => u.id === (decoded.id || decoded.userId) || u._id === (decoded.id || decoded.userId));
+                }
 
                 if (!user || user.isActive === false) {
                     throw new Error('User not found or inactive');
@@ -39,7 +51,7 @@ const auth = async (req, res, next) => {
 
                 // Set both the full user object and userId for compatibility
                 req.user = user;
-                req.user.userId = user._id;
+                req.user.userId = user._id || user.id;
                 return next();
             } catch (adminErr) {
                 console.error('Admin auth error:', adminErr);
