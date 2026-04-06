@@ -28,28 +28,26 @@ const resetAdmin = async () => {
         ];
 
         for (const userData of usersToReset) {
-            const hashedPassword = await bcrypt.hash(userData.password, 12);
             let user = await User.findOne({ email: userData.email });
 
             if (user) {
                 console.log(`Updating user: ${userData.email}`);
-                user.password = hashedPassword;
-                if (userData.role === 'admin') user.adminPassword = hashedPassword;
+                user.password = userData.password;
+                if (userData.role === 'admin') user.adminPassword = userData.password;
                 user.role = userData.role;
                 user.isActive = true;
-                await user.save({ validateBeforeSave: false });
             } else {
                 console.log(`Creating user: ${userData.email}`);
                 user = new User({
                     name: userData.name,
                     email: userData.email,
-                    password: hashedPassword,
-                    adminPassword: userData.role === 'admin' ? hashedPassword : undefined,
+                    password: userData.password,
                     role: userData.role,
                     isActive: true
                 });
-                await user.save({ validateBeforeSave: false });
+                if (userData.role === 'admin') user.adminPassword = userData.password;
             }
+            await user.save();
         }
 
         console.log('--- USER RESET COMPLETE ---');
