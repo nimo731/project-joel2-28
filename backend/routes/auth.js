@@ -315,7 +315,7 @@ router.post('/reset-password/:token', [
             .digest('hex');
 
         let user;
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             user = await User.findOne({
                 resetPasswordToken,
                 resetPasswordExpires: { $gt: Date.now() }

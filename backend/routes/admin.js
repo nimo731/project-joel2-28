@@ -22,7 +22,7 @@ router.get('/dashboard', adminAuth, async (req, res) => {
     try {
         let totalUsers, totalPrayers, totalSermons, totalEvents, upcomingEvents, totalTestimonies, pendingTestimonies;
 
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             [
                 totalUsers,
                 totalPrayers,
@@ -79,7 +79,7 @@ router.get('/dashboard', adminAuth, async (req, res) => {
 router.get('/prayers', adminAuth, async (req, res) => {
     try {
         let prayers;
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             prayers = await PrayerRequest.find().sort({ createdAt: -1 });
         } else {
             prayers = req.app.locals.storage.prayers.sort((a, b) => b.createdAt - a.createdAt);
@@ -158,7 +158,7 @@ router.delete('/prayers/:id', adminAuth, async (req, res) => {
 router.get('/sermons', adminAuth, async (req, res) => {
     try {
         let sermons;
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             sermons = await Sermon.find().sort({ date: -1 });
         } else {
             sermons = req.app.locals.storage.sermons.sort((a, b) => b.date - a.date);
@@ -288,7 +288,7 @@ router.delete('/sermons/:id', adminAuth, async (req, res) => {
 router.get('/events', adminAuth, async (req, res) => {
     try {
         let events;
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             events = await Event.find().sort({ date: 1 });
         } else {
             events = req.app.locals.storage.events.sort((a, b) => a.date - b.date);
@@ -493,7 +493,7 @@ router.put('/events/:id/meet-link', adminAuth, async (req, res) => {
 router.get('/users', adminAuth, async (req, res) => {
     try {
         let users;
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             users = await User.find().select('-password');
         } else {
             users = req.app.locals.storage.users.map(u => {

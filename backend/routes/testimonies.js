@@ -77,7 +77,7 @@ router.get('/', async (req, res) => {
         const skip = (page - 1) * limit;
 
         let resultData;
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             const [testimonies, total] = await Promise.all([
                 Testimony.find({ isApproved: true })
                     .populate('userId', 'name profileImage')
@@ -183,7 +183,7 @@ router.post('/:id/like', auth, async (req, res) => {
 router.get('/admin', auth, adminAuth, async (req, res) => {
     try {
         let testimonies;
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             testimonies = await Testimony.find()
                 .populate('userId', 'name email profileImage')
                 .sort({ createdAt: -1 });

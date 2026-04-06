@@ -144,12 +144,42 @@ const connectDB = async () => {
     try {
       console.log('⏳ Connecting to MongoDB...');
       await mongoose.connect(process.env.MONGODB_URI, {
-        serverSelectionTimeoutMS: 5000, // 5 seconds timeout for faster failover
+        serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         family: 4
       });
       console.log('🔥 Connected to MongoDB - THE JOEL 2:28 GENERATION');
       app.locals.isDbConnected = true;
+
+      // --- AUTO-SEED NEW DATABASE ---
+      const User = require('./models/User');
+      const bcrypt = require('bcryptjs');
+      const count = await User.countDocuments();
+      if (count === 0) {
+        console.log('🌱 Empty database detected. Seeding default accounts...');
+        const usersToSeed = [
+          { email: 'admin@joel228.com', password: 'Joel228@Admin2025', role: 'admin', name: 'System Admin' },
+          { email: 'patiencekaranjah@gmail.com', password: 'makeit&shineo6', role: 'member', name: 'Patience Karanjah' }
+        ];
+        for (const u of usersToSeed) {
+          console.log(`🔑 Hashing password for: ${u.email}`);
+          if (!u.password) throw new Error('Password is missing for user seed');
+          const hashedPassword = await bcrypt.hash(String(u.password), 12);
+          const newUser = new User({
+            name: u.name,
+            email: u.email,
+            password: hashedPassword,
+            adminPassword: u.role === 'admin' ? hashedPassword : undefined,
+            role: u.role,
+            isActive: true
+          });
+          await newUser.save({ validateBeforeSave: false });
+          console.log(`✅ Seeded: ${u.email}`);
+        }
+        console.log('🎉 ALL DEFAULT ACCOUNTS SEEDED SUCCESSFULLY');
+      }
+      // -----------------------------
+
       return true;
     } catch (err) {
       console.error('❌ MongoDB initial connection error:', err.message);

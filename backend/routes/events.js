@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 
         let events, total;
 
-        if (req.app.locals.isDbConnected) {
+        if (require('mongoose').connection.readyState === 1) {
             let query = { isPublished: true };
             if (upcoming === 'true') {
                 query.date = { $gte: new Date() };

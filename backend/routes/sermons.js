@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
     const skip = (page - 1) * limit;
 
     let sermons, total;
-    if (req.app.locals.isDbConnected) {
+    if (require('mongoose').connection.readyState === 1) {
       [sermons, total] = await Promise.all([
         Sermon.find({ isPublished: true })
           .sort({ date: -1 })
