@@ -9,93 +9,52 @@ This is a **monorepo** containing a complete full-stack application with clean s
 ```
 project-joel-2-28/
 │
-├── frontend/                          # Frontend Application
-│   ├── index.html                     # Main public landing page
-│   ├── admin-login.html               # Admin authentication page
-│   ├── admin-dashboard.html           # Admin control panel
-│   ├── admin-events.html              # Event management interface
-│   ├── admin-sermons.html             # Sermon management interface
-│   ├── past-events.html               # Past events archive page
-│   │
-│   ├── css/                           # Stylesheets
-│   │   ├── main.css                   # Main application styles
-│   │   └── admin-login.css            # Admin login page styles
-│   │
-│   └── js/                            # JavaScript Files
-│       ├── main.js                    # Main frontend logic & API calls
-│       ├── admin-login.js             # Admin login handler
-│       └── past-events.js             # Past events page logic
+├── client/                            # React Frontend Application
+│   ├── src/                           # Source code
+│   │   ├── components/                # Reusable UI components
+│   │   ├── pages/                     # Page components (Home, Contact, etc.)
+│   │   ├── services/                  # API service layer (axios)
+│   │   └── utils/                     # Utility functions
+│   ├── public/                        # Static assets
+│   ├── index.html                     # Vite entry point
+│   └── package.json                   # Dependencies & scripts
 │
-├── backend/                           # Backend API Server
-│   ├── server.js                      # Express.js entry point
-│   ├── package.json                   # Backend dependencies
-│   ├── package-lock.json              # Dependency lock file
-│   │
-│   ├── .env                           # Environment variables (local)
-│   ├── .env.example                   # Environment template
-│   │
-│   ├── routes/                        # API Route Handlers
-│   │   ├── auth.js                    # User authentication routes
-│   │   ├── adminAuth.js               # Admin authentication routes
-│   │   ├── admin.js                   # Admin management routes
-│   │   ├── users.js                   # User management routes
-│   │   ├── sermons.js                 # Sermon CRUD routes
-│   │   ├── events.js                  # Event CRUD routes
-│   │   ├── prayers.js                 # Prayer request routes
-│   │   └── testimonies.js             # Testimony routes
-│   │
-│   ├── models/                        # MongoDB Mongoose Schemas
-│   │   ├── User.js                    # User data model
-│   │   ├── Event.js                   # Event data model
-│   │   ├── Sermon.js                  # Sermon data model
-│   │   ├── PrayerRequest.js           # Prayer request data model
-│   │   └── Testimony.js               # Testimony data model
-│   │
-│   ├── controllers/                   # Business Logic
-│   │   └── adminAuthController.js     # Admin authentication logic
-│   │
-│   ├── middleware/                    # Custom Middleware
-│   │   ├── adminAuth.js               # Admin authentication middleware
-│   │   └── errorHandler.js            # Global error handling
-│   │
-│   ├── utils/                         # Utility Functions
-│   │   ├── catchAsync.js              # Async error wrapper
-│   │   └── appError.js                # Custom error class
-│   │
-│   ├── scripts/                       # Setup & Utility Scripts
-│   │   └── setupAdmins.js             # Admin user initialization
-│   │
-│   ├── public/                        # Static assets (if any)
-│   │   └── admin-events.html          # Legacy admin file
-│   │
-│   └── node_modules/                  # Dependencies (not in git)
+├── backend/                           # Node.js Express API Server
+│   ├── server.js                      # Entry point
+│   ├── routes/                        # API routes
+│   ├── models/                        # Mongoose schemas
+│   ├── controllers/                   # Business logic
+│   ├── middleware/                    # Auth & error handling
+│   ├── services/                      # Email & other services
+│   ├── utils/                         # API utilities
+│   └── package.json                   # Dependencies & scripts
 │
 ├── .gitignore                         # Git ignore rules
-├── package.json                       # Root package.json (monorepo)
 ├── README.md                          # Main project documentation
 ├── PROJECT_STRUCTURE.md               # This file
-│
-└── .git/                              # Git repository
+├── RENDER_DEPLOYMENT.md               # Backend deployment guide
+└── NETLIFY_DEPLOYMENT.md              # Frontend deployment guide
 ```
 
 ## Key Features by Directory
 
-### Frontend (`/frontend`)
+### Frontend (`/client`)
 
-**Purpose:** User-facing web application
+**Purpose:** Modern React-based user interface
 
 **Components:**
-- **Public Pages:** Landing page, past events, prayer wall
-- **Admin Pages:** Login, dashboard, event management, sermon management
-- **Styling:** Modern, responsive CSS with CSS variables
-- **Interactivity:** Vanilla JavaScript with API integration
+- **Pages:** Home, Sermons, Events, Testimonials, Contact, Login, Signup
+- **Admin:** Admin dashboard, management interfaces (integrated in React)
+- **State Management:** React hooks and local state
+- **API Integration:** Axios-based services connecting to the backend
 
 **Key Technologies:**
-- HTML5
-- CSS3 (with CSS custom properties)
-- Vanilla JavaScript (ES6+)
-- Font Awesome icons
-- Google Fonts
+- React 18
+- Vite
+- Tailwind CSS
+- Axios
+- React Router DOM
+- React Icons
 
 ### Backend (`/backend`)
 
@@ -106,26 +65,16 @@ project-joel-2-28/
 1. **Routes** - API endpoint definitions
    - Authentication (user & admin)
    - CRUD operations for sermons, events, prayers, testimonies
-   - User management
+   - User profile and contact management
 
-2. **Models** - Data schemas
-   - User (with password hashing)
-   - Event (with date/location)
-   - Sermon (with metadata)
-   - PrayerRequest (with timestamps)
-   - Testimony (with author info)
+2. **Models** - Mongoose Schemas
+   - User, Event, Sermon, PrayerRequest, Testimony
 
-3. **Controllers** - Business logic
-   - Authentication logic
-   - Data validation
-   - Error handling
+3. **Services** - External Integrations
+   - Nodemailer for email notifications
 
-4. **Middleware** - Request processing
-   - JWT authentication
-   - Error handling
-   - CORS support
-   - Rate limiting
-   - Security headers (Helmet)
+4. **Middleware**
+   - JWT authentication, security headers (Helmet), CORS
 
 5. **Utils** - Helper functions
    - Async error wrapper

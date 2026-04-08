@@ -206,8 +206,14 @@ const testimonyRoutes = require('./routes/testimonies');
 // Make in-memory storage available to routes
 app.locals.storage = inMemoryStorage;
 
-// Serve static files from the frontend directory
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Main route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'THE JOEL 2:28 GENERATION API is running.',
+    documentation: '/api/v1',
+    status: 'OK'
+  });
+});
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

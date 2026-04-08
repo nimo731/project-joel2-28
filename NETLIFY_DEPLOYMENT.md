@@ -90,31 +90,27 @@ After successful deployment, you'll see:
 
 ---
 
-### Method 3: GitHub Integration (Most Automated)
+### GitHub Integration (Recommended)
 
 **Best for:** Continuous deployment on every push
 
-#### Step 1: Connect GitHub Repository
+Connect your repository to Netlify:
+1.  **Build Command**: `npm run build`
+2.  **Publish Directory**: `client/dist` (or `dist` if your build settings are rooted at `client`)
+3.  **Base Directory**: `client`
 
-1. Log in to Netlify
-2. Click "New site from Git"
-3. Choose "GitHub"
-4. Authorize Netlify to access your GitHub account
-5. Select your `project-joel2-28` repository
+Netlify will automatically build and deploy your React app whenever you push to the `main` branch.
 
-#### Step 2: Configure Build Settings
+### Manual CLI Deployment (Alternative)
 
-1. **Branch to deploy:** `main`
-2. **Build command:** Leave empty (static site, no build needed)
-3. **Publish directory:** `frontend`
+If you prefer using the CLI:
 
-#### Step 3: Deploy
-
-Click "Deploy site" and Netlify will:
-- Clone your repository
-- Deploy the `frontend` folder
-- Assign a URL
-- Redeploy automatically on every push to `main`
+```bash
+cd client
+npm install
+npm run build
+netlify deploy --prod --dir=dist
+```
 
 ---
 

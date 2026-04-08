@@ -205,25 +205,16 @@ curl https://joel-228-api.onrender.com/api/v1/sermons
 
 ---
 
-## Step 5: Update Frontend API URL
+## Step 5: Connect Frontend to Backend
 
-Once your backend is deployed on Render, update the frontend:
+Once your backend is live on Render, you should configure your frontend to use the Render URL.
 
-**File:** `/frontend/js/main.js`
+**For React (client):**
+Add the `VITE_API_URL` environment variable in the Netlify dashboard:
+- **Key**: `VITE_API_URL`
+- **Value**: `https://joel-228-api.onrender.com/api/v1`
 
-Change line 2 from:
-```javascript
-const API_BASE_URL = 'http://localhost:5001/api/v1';
-```
-
-To:
-```javascript
-const API_BASE_URL = 'https://joel-228-api.onrender.com/api/v1';
-```
-
-Also update `/frontend/js/admin-login.js` if it has an API URL.
-
-Then redeploy frontend to Netlify.
+Netlify will rebuild your app with the new environment variable, and the `client/src/services/api.js` file will use it automatically.
 
 ---
 
