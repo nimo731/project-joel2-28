@@ -16,15 +16,15 @@ const Contact = () => {
             <div className="max-w-6xl mx-auto px-4 -mt-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {/* Email */}
-                    <div className="bg-white p-8 rounded-xl shadow-lg border-b-4 border-zegen-red hover:shadow-xl transition">
+                    <div className="bg-white p-8 rounded-xl shadow-lg border-b-4 border-zegen-red hover:shadow-xl transition flex flex-col items-center">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-zegen-red text-2xl mx-auto mb-4">
                             <FaEnvelope />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2 text-center">Email Us</h3>
-                        <p className="text-gray-600 text-center mb-4">Send us your prayer requests or questions</p>
-                        <a href="mailto:thejoelgeneration52@gmail.com"
-                            className="block text-center text-zegen-red font-semibold hover:underline">
-                            thejoelgeneration52@gmail.com
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">Email Us</h3>
+                        <p className="text-gray-600 mb-4 text-center">Send us your prayer requests or questions</p>
+                        <a href="mailto:patiencekaranjah@gmail.com"
+                            className="text-zegen-red font-semibold hover:underline bg-red-50 px-4 py-2 rounded-lg transition-colors hover:bg-red-100">
+                            patiencekaranjah@gmail.com
                         </a>
                     </div>
 

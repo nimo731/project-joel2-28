@@ -58,18 +58,28 @@ const prodOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'https://glittering-boba-2c96da.netlify.app',
-  'https://joel2-28.netlify.app'
+  'https://joel2-28.netlify.app',
+  'https://joel2-28.netlify.app/'
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || prodOrigins.includes(origin)) {
-      return callback(null, true);
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const isAllowed = prodOrigins.includes(origin) ||
+      origin.endsWith('.netlify.app') ||
+      origin.endsWith('.netlify.app/');
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked for origin:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
-    callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'X-Requested-With', 'Accept', 'Origin'],
   credentials: true,
   optionsSuccessStatus: 200
 };
