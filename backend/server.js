@@ -30,7 +30,41 @@ mongoose.set('bufferCommands', false);
 
 const app = express();
 
-// Security middleware with updated CSP
+// CORS configuration - MUST BE FIRST
+const prodOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://glittering-boba-2c96da.netlify.app',
+  'https://joel2-28.netlify.app',
+  'https://joel2-28.netlify.app/',
+  'https://joel-2-28.netlify.app',
+  'https://joel-2-28.netlify.app/'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    // Check if origin matches any allowed patterns
+    const isAllowed = prodOrigins.includes(origin) ||
+      origin.includes('netlify.app');
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(null, false); // Just disallow instead of throwing error
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'X-Requested-With', 'Accept', 'Origin'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -39,7 +73,7 @@ app.use(helmet({
       scriptSrcAttr: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://joel-228-api.onrender.com", "wss://joel-228-api.onrender.com"],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'", "blob:", "data:"],
@@ -52,40 +86,6 @@ app.use(helmet({
   crossOriginOpenerPolicy: false,
   crossOriginResourcePolicy: false
 }));
-
-// CORS configuration
-const prodOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'https://glittering-boba-2c96da.netlify.app',
-  'https://joel2-28.netlify.app',
-  'https://joel2-28.netlify.app/'
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    const isAllowed = prodOrigins.includes(origin) ||
-      origin.endsWith('.netlify.app') ||
-      origin.endsWith('.netlify.app/');
-
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked for origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'X-Requested-With', 'Accept', 'Origin'],
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
