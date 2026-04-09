@@ -187,21 +187,21 @@ const Events = () => {
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
                         {/* Modal Header/Image */}
-                        <div className="relative w-full bg-gray-900 flex items-center justify-center overflow-hidden shrink-0 min-h-[300px] max-h-[500px]">
+                        <div className="relative w-full bg-gray-100 flex items-center justify-center overflow-hidden shrink-0 border-b">
                             {selectedEvent.imageUrl && !selectedEvent.imageUrl.includes('undefined') ? (
                                 <img
                                     src={selectedEvent.imageUrl.startsWith('http') ? selectedEvent.imageUrl : `${api.defaults.baseURL.replace('/api/v1', '')}${selectedEvent.imageUrl}`}
                                     alt={selectedEvent.title}
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-auto max-h-[60vh] object-contain"
                                 />
                             ) : (
-                                <div className="w-full h-full bg-zegen-blue flex items-center justify-center py-20">
+                                <div className="w-full h-48 bg-zegen-blue flex items-center justify-center">
                                     <FaCalendar className="text-white/20 text-7xl" />
                                 </div>
                             )}
                             <button
                                 onClick={() => setIsDetailsModalOpen(false)}
-                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-zegen-red transition-all z-10"
+                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-zegen-red transition-all z-10 shadow-lg"
                             >
                                 <FaTimes className="text-xl" />
                             </button>
