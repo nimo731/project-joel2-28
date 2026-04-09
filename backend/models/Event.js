@@ -32,7 +32,6 @@ const eventSchema = new mongoose.Schema({
     },
     venue: {
         type: String,
-        required: [true, 'Venue is required'],
         maxlength: [200, 'Venue cannot exceed 200 characters']
     },
     isOnline: {

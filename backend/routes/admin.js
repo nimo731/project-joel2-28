@@ -332,7 +332,7 @@ router.post('/events', adminAuth, upload.fields([
             venue: location, // Model uses 'venue'
             startTime: req.body.startTime || "00:00", // Required fields
             endTime: req.body.endTime || "23:59", // Required fields
-            meetingLink,
+            meetingLink: meetingLink || undefined,
             isOnline: isOnline === 'true' || isOnline === true,
             isRecurring: isRecurring === 'true' || isRecurring === true,
             recurringDetails: isRecurring ? recurringDetails : null,
@@ -373,7 +373,7 @@ router.put('/events/:id', adminAuth, upload.fields([
             event.location = location;
             event.venue = location;
         }
-        if (meetingLink) event.meetingLink = meetingLink;
+        if (meetingLink !== undefined) event.meetingLink = meetingLink || null;
         if (isOnline !== undefined) event.isOnline = isOnline === 'true' || isOnline === true;
         if (isRecurring !== undefined) {
             event.isRecurring = isRecurring === 'true' || isRecurring === true;
