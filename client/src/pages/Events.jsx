@@ -115,12 +115,12 @@ const Events = () => {
                                 </div>
 
                                 {/* Image (Mobile Top / Desktop Left) */}
-                                <div className="h-48 md:h-auto md:w-64 shrink-0 relative overflow-hidden">
+                                <div className="h-64 md:h-auto md:w-64 shrink-0 relative overflow-hidden bg-gray-100 flex items-center justify-center">
                                     {event.imageUrl && !event.imageUrl.includes('undefined') ? (
                                         <img
                                             src={event.imageUrl.startsWith('http') ? event.imageUrl : `${api.defaults.baseURL.replace('/api/v1', '')}${event.imageUrl}`}
                                             alt={event.title}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
