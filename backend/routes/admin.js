@@ -308,7 +308,7 @@ router.post('/events', adminAuth, upload.fields([
     { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { title, description, date, location, googleMeetLink, isRecurring, recurringDetails, imageUrl, videoUrl } = req.body;
+        const { title, description, date, location, meetingLink, isOnline, isRecurring, recurringDetails, imageUrl, videoUrl } = req.body;
 
         let finalImageUrl = imageUrl;
         let finalVideoUrl = videoUrl;
@@ -332,7 +332,8 @@ router.post('/events', adminAuth, upload.fields([
             venue: location, // Model uses 'venue'
             startTime: req.body.startTime || "00:00", // Required fields
             endTime: req.body.endTime || "23:59", // Required fields
-            googleMeetLink,
+            meetingLink,
+            isOnline: isOnline === 'true' || isOnline === true,
             isRecurring: isRecurring === 'true' || isRecurring === true,
             recurringDetails: isRecurring ? recurringDetails : null,
             imageUrl: finalImageUrl,
@@ -357,7 +358,7 @@ router.put('/events/:id', adminAuth, upload.fields([
     { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { title, description, date, location, googleMeetLink, isRecurring, recurringDetails, imageUrl, videoUrl } = req.body;
+        const { title, description, date, location, meetingLink, isOnline, isRecurring, recurringDetails, imageUrl, videoUrl } = req.body;
 
         const event = await Event.findById(req.params.id);
         if (!event) {
@@ -372,7 +373,8 @@ router.put('/events/:id', adminAuth, upload.fields([
             event.location = location;
             event.venue = location;
         }
-        if (googleMeetLink) event.googleMeetLink = googleMeetLink;
+        if (meetingLink) event.meetingLink = meetingLink;
+        if (isOnline !== undefined) event.isOnline = isOnline === 'true' || isOnline === true;
         if (isRecurring !== undefined) {
             event.isRecurring = isRecurring === 'true' || isRecurring === true;
             if (event.isRecurring && recurringDetails) {
@@ -435,8 +437,8 @@ router.get('/meet-links', adminAuth, async (req, res) => {
     try {
         // Get events with Google Meet links
         const events = await Event.find({
-            googleMeetLink: { $exists: true, $ne: '' }
-        }).select('title date googleMeetLink');
+            meetingLink: { $exists: true, $ne: '' }
+        }).select('title date meetingLink');
 
         res.json({ success: true, meetLinks: events });
     } catch (error) {
@@ -450,12 +452,12 @@ router.get('/meet-links', adminAuth, async (req, res) => {
 // @access  Admin
 router.put('/events/:id/meet-link', adminAuth, async (req, res) => {
     try {
-        const { googleMeetLink } = req.body;
+        const { meetingLink } = req.body;
 
-        if (!googleMeetLink) {
+        if (!meetingLink) {
             return res.status(400).json({
                 success: false,
-                message: 'Google Meet link is required'
+                message: 'Meeting link is required'
             });
         }
 
@@ -464,17 +466,17 @@ router.put('/events/:id/meet-link', adminAuth, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Event not found' });
         }
 
-        event.googleMeetLink = googleMeetLink;
+        event.meetingLink = meetingLink;
         event.updatedAt = Date.now();
         await event.save();
 
         res.json({
             success: true,
-            message: 'Google Meet link updated successfully',
+            message: 'Meeting link updated successfully',
             event: {
                 id: event._id,
                 title: event.title,
-                googleMeetLink: event.googleMeetLink
+                meetingLink: event.meetingLink
             }
         });
     } catch (error) {

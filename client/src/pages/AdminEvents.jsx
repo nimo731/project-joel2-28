@@ -17,7 +17,9 @@ const AdminEvents = () => {
         venue: '',
         category: 'fellowship',
         imageUrl: '',
-        videoUrl: ''
+        videoUrl: '',
+        meetingLink: '',
+        isOnline: false
     });
     const [imageFile, setImageFile] = useState(null);
     const [videoFile, setVideoFile] = useState(null);
@@ -94,11 +96,13 @@ const AdminEvents = () => {
                 venue: event.venue || '',
                 category: event.category || 'fellowship',
                 imageUrl: event.imageUrl || '',
-                videoUrl: event.videoUrl || ''
+                videoUrl: event.videoUrl || '',
+                meetingLink: event.meetingLink || '',
+                isOnline: event.isOnline || false
             });
         } else {
             setFormData({
-                title: '', description: '', date: '', startTime: '09:00', endTime: '11:00', venue: '', category: 'fellowship', imageUrl: '', videoUrl: ''
+                title: '', description: '', date: '', startTime: '09:00', endTime: '11:00', venue: '', category: 'fellowship', imageUrl: '', videoUrl: '', meetingLink: '', isOnline: false
             });
         }
         setIsModalOpen(true);
@@ -197,8 +201,23 @@ const AdminEvents = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Venue</label>
-                                    <input type="text" required className="w-full border rounded p-2" value={formData.venue} onChange={e => setFormData({ ...formData, venue: e.target.value })} />
+                                    <input type="text" required={!formData.isOnline} className="w-full border rounded p-2" value={formData.venue} onChange={e => setFormData({ ...formData, venue: e.target.value })} />
                                 </div>
+                                <div className="flex flex-col justify-end pb-2">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" className="w-4 h-4 text-zegen-red rounded border-gray-300 focus:ring-zegen-red" checked={formData.isOnline} onChange={e => setFormData({ ...formData, isOnline: e.target.checked })} />
+                                        <span className="text-sm font-medium text-gray-700">Online Event</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                {formData.isOnline && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Meeting Link</label>
+                                        <input type="url" placeholder="https://meet.google.com/..." className="w-full border rounded p-2" value={formData.meetingLink} onChange={e => setFormData({ ...formData, meetingLink: e.target.value })} />
+                                    </div>
+                                )}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Category</label>
                                     <select className="w-full border rounded p-2" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>

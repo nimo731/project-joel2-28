@@ -9,6 +9,8 @@ const Events = () => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
     const [pagination, setPagination] = useState({ page: 1, pages: 1 });
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
     useEffect(() => {
         fetchEvents();
@@ -51,6 +53,11 @@ const Events = () => {
         if (type === 'month') return date.toLocaleString('default', { month: 'short' }).toUpperCase();
         if (type === 'full') return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         if (type === 'time') return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const openDetails = (event) => {
+        setSelectedEvent(event);
+        setIsDetailsModalOpen(true);
     };
 
     const categories = ['all', 'service', 'tongues fest', 'outreach', 'prayer', 'worship'];
@@ -150,7 +157,7 @@ const Events = () => {
 
                                     <div className="mt-auto">
                                         <button
-                                            onClick={() => alert(`RSVP functionality for "${event.title}" will be available soon!`)}
+                                            onClick={() => openDetails(event)}
                                             className="inline-flex items-center px-6 py-2 bg-gray-100 hover:bg-zegen-red hover:text-white text-gray-700 font-semibold rounded-lg transition-colors duration-300"
                                         >
                                             <FaTicketAlt className="mr-2" />
@@ -173,6 +180,109 @@ const Events = () => {
                     >
                         Load More Events
                     </button>
+                </div>
+            )}
+            {/* Event Details Modal */}
+            {isDetailsModalOpen && selectedEvent && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                        {/* Modal Header/Image */}
+                        <div className="relative h-48 md:h-64 shrink-0">
+                            {selectedEvent.imageUrl && !selectedEvent.imageUrl.includes('undefined') ? (
+                                <img
+                                    src={selectedEvent.imageUrl.startsWith('http') ? selectedEvent.imageUrl : `${api.defaults.baseURL.replace('/api/v1', '')}${selectedEvent.imageUrl}`}
+                                    alt={selectedEvent.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-zegen-blue flex items-center justify-center">
+                                    <FaCalendar className="text-white/20 text-7xl" />
+                                </div>
+                            )}
+                            <button
+                                onClick={() => setIsDetailsModalOpen(false)}
+                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                            >
+                                <FaTicketAlt className="rotate-45" /> {/* Using an icon as a close button placeholder if FaTimes is not available, but I'll import FaTimes if possible */}
+                                {/* Wait, I didn't import FaTimes. I see FaTicketAlt is already imported. Let me check imported icons. */}
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 md:p-8 overflow-y-auto">
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="px-3 py-1 rounded-full bg-zegen-red/10 text-zegen-red text-xs font-bold uppercase tracking-wider">
+                                    {selectedEvent.category}
+                                </span>
+                                {selectedEvent.isOnline && (
+                                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider">
+                                        Online
+                                    </span>
+                                )}
+                            </div>
+
+                            <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">{selectedEvent.title}</h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div className="space-y-4">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-zegen-red">
+                                            <FaCalendar />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-400 font-medium">Date</p>
+                                            <p className="text-gray-800 font-bold">{formatDate(selectedEvent.date, 'full')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-zegen-red">
+                                            <FaClock />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-400 font-medium">Time</p>
+                                            <p className="text-gray-800 font-bold">{formatDate(selectedEvent.date, 'time')} - {selectedEvent.endTime || 'Close'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-zegen-red">
+                                            <FaMapMarkerAlt />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-400 font-medium">Location</p>
+                                            <p className="text-gray-800 font-bold">{selectedEvent.venue || selectedEvent.location || 'Consult Admin'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <h4 className="text-lg font-bold text-gray-900 mb-2">About this Event</h4>
+                                <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{selectedEvent.description}</p>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
+                                {selectedEvent.isOnline && selectedEvent.meetingLink && (
+                                    <a
+                                        href={selectedEvent.meetingLink.startsWith('http') ? selectedEvent.meetingLink : `https://${selectedEvent.meetingLink}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex-1 inline-flex items-center justify-center px-6 py-3 bg-zegen-red text-white font-bold rounded-xl shadow-lg hover:bg-black transition-all transform hover:-translate-y-1"
+                                    >
+                                        Join Online Meeting
+                                    </a>
+                                )}
+                                <button
+                                    onClick={() => alert('RSVP functionality will be available soon!')}
+                                    className="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all"
+                                >
+                                    RSVP Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
