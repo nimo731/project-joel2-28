@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { FaCalendar, FaMapMarkerAlt, FaClock, FaSearch, FaTicketAlt } from 'react-icons/fa';
+import { FaCalendar, FaMapMarkerAlt, FaClock, FaSearch, FaTicketAlt, FaTimes } from 'react-icons/fa';
 import EmptyState from '../components/EmptyState';
 
 const Events = () => {
@@ -187,24 +187,23 @@ const Events = () => {
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
                         {/* Modal Header/Image */}
-                        <div className="relative h-48 md:h-64 shrink-0">
+                        <div className="relative w-full bg-gray-900 flex items-center justify-center overflow-hidden shrink-0 min-h-[300px] max-h-[500px]">
                             {selectedEvent.imageUrl && !selectedEvent.imageUrl.includes('undefined') ? (
                                 <img
                                     src={selectedEvent.imageUrl.startsWith('http') ? selectedEvent.imageUrl : `${api.defaults.baseURL.replace('/api/v1', '')}${selectedEvent.imageUrl}`}
                                     alt={selectedEvent.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-contain"
                                 />
                             ) : (
-                                <div className="w-full h-full bg-zegen-blue flex items-center justify-center">
+                                <div className="w-full h-full bg-zegen-blue flex items-center justify-center py-20">
                                     <FaCalendar className="text-white/20 text-7xl" />
                                 </div>
                             )}
                             <button
                                 onClick={() => setIsDetailsModalOpen(false)}
-                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-zegen-red transition-all z-10"
                             >
-                                <FaTicketAlt className="rotate-45" /> {/* Using an icon as a close button placeholder if FaTimes is not available, but I'll import FaTimes if possible */}
-                                {/* Wait, I didn't import FaTimes. I see FaTicketAlt is already imported. Let me check imported icons. */}
+                                <FaTimes className="text-xl" />
                             </button>
                         </div>
 
