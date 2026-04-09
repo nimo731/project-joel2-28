@@ -308,7 +308,7 @@ router.post('/events', adminAuth, upload.fields([
     { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { title, description, date, location, meetingLink, isOnline, isRecurring, recurringDetails, imageUrl, videoUrl } = req.body;
+        const { title, description, date, location, meetingLink, isOnline, category, isRecurring, recurringDetails, imageUrl, videoUrl } = req.body;
 
         let finalImageUrl = imageUrl;
         let finalVideoUrl = videoUrl;
@@ -336,8 +336,8 @@ router.post('/events', adminAuth, upload.fields([
             isOnline: isOnline === 'true' || isOnline === true,
             isRecurring: isRecurring === 'true' || isRecurring === true,
             recurringDetails: isRecurring ? recurringDetails : null,
-            imageUrl: finalImageUrl,
             videoUrl: finalVideoUrl,
+            category: category || 'fellowship',
             createdBy: req.user._id,
             isPublished: true // Ensure it appears on public page
         });
@@ -358,7 +358,7 @@ router.put('/events/:id', adminAuth, upload.fields([
     { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { title, description, date, location, meetingLink, isOnline, isRecurring, recurringDetails, imageUrl, videoUrl } = req.body;
+        const { title, description, date, location, meetingLink, isOnline, category, isRecurring, recurringDetails, imageUrl, videoUrl } = req.body;
 
         const event = await Event.findById(req.params.id);
         if (!event) {
@@ -375,6 +375,7 @@ router.put('/events/:id', adminAuth, upload.fields([
         }
         if (meetingLink !== undefined) event.meetingLink = meetingLink || null;
         if (isOnline !== undefined) event.isOnline = isOnline === 'true' || isOnline === true;
+        if (category) event.category = category;
         if (isRecurring !== undefined) {
             event.isRecurring = isRecurring === 'true' || isRecurring === true;
             if (event.isRecurring && recurringDetails) {
