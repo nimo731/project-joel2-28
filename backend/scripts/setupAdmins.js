@@ -42,13 +42,13 @@ const setupAdmins = async () => {
         for (const admin of ADMINS) {
             // Find the user by email
             let user = await User.findOne({ email: admin.email });
-            
+
             if (!user) {
                 console.log(`Creating new admin user: ${admin.email}`);
                 // Hash the admin password
                 const salt = await bcrypt.genSalt(12);
                 const hashedPassword = await bcrypt.hash(admin.adminPassword, salt);
-                
+
                 // Create new admin user
                 user = new User({
                     name: admin.email.split('@')[0], // Use email prefix as name
@@ -59,7 +59,7 @@ const setupAdmins = async () => {
                     isActive: true,
                     adminPasswordChangedAt: Date.now()
                 });
-                
+
                 await user.save({ validateBeforeSave: false });
                 console.log(`Created admin user: ${admin.email}`);
             } else {
@@ -67,21 +67,21 @@ const setupAdmins = async () => {
                 console.log(`Updating admin user: ${admin.email}`);
                 const salt = await bcrypt.genSalt(12);
                 const hashedPassword = await bcrypt.hash(admin.adminPassword, salt);
-                
+
                 // Log the hashed password for debugging
                 console.log(`New hashed password for ${admin.email}:`, hashedPassword);
-                
+
                 // Update user with admin role and new password
                 user.password = hashedPassword;
                 user.adminPassword = hashedPassword;
                 user.role = 'admin';
                 user.isActive = true;
                 user.adminPasswordChangedAt = Date.now();
-                
+
                 // Force save even if validation fails
                 await user.save({ validateBeforeSave: false });
                 console.log(`Updated admin user: ${admin.email}`);
-                
+
                 // Verify the update
                 const updatedUser = await User.findById(user._id).select('+adminPassword');
                 console.log('Updated user data:', {
@@ -104,7 +104,7 @@ const setupAdmins = async () => {
                 }
             }
         }
-        
+
         console.log('Admin setup completed successfully');
         process.exit(0);
     } catch (error) {

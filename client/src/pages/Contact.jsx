@@ -22,9 +22,9 @@ const Contact = () => {
                         </div>
                         <h3 className="text-xl font-bold text-gray-800 mb-2">Email Us</h3>
                         <p className="text-gray-600 mb-4 text-center">Send us your prayer requests or questions</p>
-                        <a href="mailto:patiencekaranjah@gmail.com"
+                        <a href="mailto:thejoelgeneration52@gmail.com"
                             className="text-zegen-red font-semibold hover:underline bg-red-50 px-4 py-2 rounded-lg transition-colors hover:bg-red-100">
-                            patiencekaranjah@gmail.com
+                            thejoelgeneration52@gmail.com
                         </a>
                     </div>
 

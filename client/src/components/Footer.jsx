@@ -40,7 +40,7 @@ const Footer = () => {
                         aria-label="WhatsApp">
                         <FaWhatsapp />
                     </a>
-                    <a href="mailto:patiencekaranjah@gmail.com"
+                    <a href="mailto:thejoelgeneration52@gmail.com"
                         style={{ color: 'white', fontSize: '1.25rem', transition: 'opacity 0.3s' }}
                         onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
                         onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
@@ -51,8 +51,8 @@ const Footer = () => {
 
                 {/* Email Address */}
                 <p style={{ fontSize: '0.85rem', opacity: 0.9, margin: '0 0 0.5rem 0' }}>
-                    <a href="mailto:patiencekaranjah@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }} className="hover:underline">
-                        patiencekaranjah@gmail.com
+                    <a href="mailto:thejoelgeneration52@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }} className="hover:underline">
+                        thejoelgeneration52@gmail.com
                     </a>
                 </p>
 
