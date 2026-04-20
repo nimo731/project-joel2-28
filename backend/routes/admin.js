@@ -6,6 +6,7 @@ const Sermon = require('../models/Sermon');
 const Event = require('../models/Event');
 const Testimony = require('../models/Testimony');
 const upload = require('../middleware/upload');
+const { cloudinary } = require('../config/cloudinary');
 const router = express.Router();
 
 // All routes in this file are protected and require admin authentication
@@ -300,6 +301,22 @@ router.get('/events', adminAuth, async (req, res) => {
     }
 });
 
+// Helper to upload from URL to Cloudinary
+const uploadFromUrl = async (url, folder = 'events') => {
+    if (!url || !url.startsWith('http') || url.includes('cloudinary.com')) return url;
+    try {
+        console.log(`[UPLOAD] Processing external URL for Cloudinary: ${url}`);
+        const result = await cloudinary.uploader.upload(url, {
+            folder: `joel228/${folder}`,
+            transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+        });
+        return result.secure_url;
+    } catch (error) {
+        console.error(`[UPLOAD ERROR] Failed to upload from URL: ${url}`, error);
+        return url; // Fallback to original URL
+    }
+};
+
 // @route   POST /api/admin/events
 // @desc    Create a new event
 // @access  Admin
@@ -322,6 +339,11 @@ router.post('/events', adminAuth, upload.fields([
                 const file = req.files.video[0];
                 finalVideoUrl = file.path || `/uploads/${file.filename}`;
             }
+        }
+
+        // Process external URL if provided and no file was uploaded
+        if (!req.files?.image && imageUrl) {
+            finalImageUrl = await uploadFromUrl(imageUrl);
         }
 
         const newEvent = new Event({
@@ -391,7 +413,7 @@ router.put('/events/:id', adminAuth, upload.fields([
                 const file = req.files.image[0];
                 event.imageUrl = file.path || `/uploads/${file.filename}`;
             } else if (imageUrl !== undefined) {
-                event.imageUrl = imageUrl;
+                event.imageUrl = await uploadFromUrl(imageUrl);
             }
 
             if (req.files.video) {
@@ -401,7 +423,7 @@ router.put('/events/:id', adminAuth, upload.fields([
                 event.videoUrl = videoUrl;
             }
         } else {
-            if (imageUrl !== undefined) event.imageUrl = imageUrl;
+            if (imageUrl !== undefined) event.imageUrl = await uploadFromUrl(imageUrl);
             if (videoUrl !== undefined) event.videoUrl = videoUrl;
         }
 

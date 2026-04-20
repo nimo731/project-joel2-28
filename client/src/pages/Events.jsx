@@ -121,6 +121,11 @@ const Events = () => {
                                             src={event.imageUrl.startsWith('http') ? event.imageUrl : `${api.defaults.baseURL.replace('/api/v1', '')}${event.imageUrl}`}
                                             alt={event.title}
                                             className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = ''; // Clear src
+                                                e.target.parentElement.innerHTML = `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><svg class="text-gray-400 text-4xl" stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48v416zm512-480v480c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V48C0 21.5 21.5 0 48 0h416c26.5 0 48 21.5 48 48zM96 232c0-13.3 10.7-24 24-24s24 10.7 24 24-10.7 24-24 24-24-10.7-24-24zm128-24c13.3 0 24 10.7 24 24s-10.7 24-24 24-24-10.7-24-24 10.7-24 24-24zm128 24c0-13.3 10.7-24 24-24s24 10.7 24 24-10.7 24-24 24-24-10.7-24-24zm-224 88c0-13.3 10.7-24 24-24h192c13.3 0 24 10.7 24 24s-10.7 24-24 24H128c-13.3 0-24-10.7-24-24z"></path></svg></div>`;
+                                            }}
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -193,6 +198,11 @@ const Events = () => {
                                     src={selectedEvent.imageUrl.startsWith('http') ? selectedEvent.imageUrl : `${api.defaults.baseURL.replace('/api/v1', '')}${selectedEvent.imageUrl}`}
                                     alt={selectedEvent.title}
                                     className="w-full h-auto max-h-[60vh] object-contain"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.style.display = 'none';
+                                        e.target.parentElement.innerHTML = `<div class="w-full h-48 bg-zegen-blue flex items-center justify-center"><svg class="text-white/20 text-7xl" stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48v416zm512-480v480c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V48C0 21.5 21.5 0 48 0h416c26.5 0 48 21.5 48 48zM96 232c0-13.3 10.7-24 24-24s24 10.7 24 24-10.7 24-24 24-24-10.7-24-24zm128-24c13.3 0 24 10.7 24 24s-10.7 24-24 24-24-10.7-24-24 10.7-24 24-24zm128 24c0-13.3 10.7-24 24-24s24 10.7 24 24-10.7 24-24 24-24-10.7-24-24zm-224 88c0-13.3 10.7-24 24-24h192c13.3 0 24 10.7 24 24s-10.7 24-24 24H128c-13.3 0-24-10.7-24-24z"></path></svg></div>`;
+                                    }}
                                 />
                             ) : (
                                 <div className="w-full h-48 bg-zegen-blue flex items-center justify-center">
