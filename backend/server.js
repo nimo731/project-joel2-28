@@ -101,12 +101,8 @@ const inMemoryStorage = {
   prayerCounts: {}
 };
 
-// Seed initial admins if provided in env or default
-const adminsToSeed = [
-  { email: 'admin@joel228.com', password: 'Joel228@Admin2025', name: 'System Admin' },
-  { email: 'patiencekaranjah@gmail.com', password: 'makeit&shineo6', name: 'Patience Karanjah' },
-  { email: 'jameskinyanjui@gmail.com', password: 'Joel228@Admin2025', name: 'James Kinyanjui' }
-];
+// Seed initial admins if provided in env
+const adminsToSeed = [];
 
 if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
   adminsToSeed.push({
@@ -115,22 +111,6 @@ if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
     name: 'Env seeded Admin'
   });
 }
-
-adminsToSeed.forEach(admin => {
-  if (!inMemoryStorage.users.find(u => u.email === admin.email)) {
-    inMemoryStorage.users.push({
-      id: `seed_${admin.email.split('@')[0]}`,
-      name: admin.name,
-      email: admin.email,
-      password: admin.password,
-      adminPassword: admin.password,
-      role: 'admin',
-      isActive: true,
-      createdAt: new Date(),
-      lastLogin: null
-    });
-  }
-});
 console.log(`👤 Seeded ${adminsToSeed.length} admin accounts into memory for fallback.`);
 
 // Track DB status dynamically
@@ -166,10 +146,16 @@ const connectDB = async () => {
       const count = await User.countDocuments();
       if (count === 0) {
         console.log('🌱 Empty database detected. Seeding default accounts...');
-        const usersToSeed = [
-          { email: 'admin@joel228.com', password: 'Joel228@Admin2025', role: 'admin', name: 'System Admin', adminPassword: 'Joel228@Admin2025' },
-          { email: 'patiencekaranjah@gmail.com', password: 'makeit&shineo6', role: 'member', name: 'Patience Karanjah' }
-        ];
+        const usersToSeed = [];
+        if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+          usersToSeed.push({
+            email: process.env.ADMIN_EMAIL.trim(),
+            password: process.env.ADMIN_PASSWORD.trim(),
+            role: 'admin',
+            name: 'System Admin',
+            adminPassword: process.env.ADMIN_PASSWORD.trim()
+          });
+        }
         for (const u of usersToSeed) {
           console.log(`👤 Seeding: ${u.email}`);
           const newUser = new User(u);
