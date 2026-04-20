@@ -34,6 +34,10 @@ const eventSchema = new mongoose.Schema({
         type: String,
         maxlength: [200, 'Venue cannot exceed 200 characters']
     },
+    location: {
+        type: String,
+        maxlength: [200, 'Location cannot exceed 200 characters']
+    },
     isOnline: {
         type: Boolean,
         default: false

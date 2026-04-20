@@ -336,6 +336,7 @@ router.post('/events', adminAuth, upload.fields([
             isOnline: isOnline === 'true' || isOnline === true,
             isRecurring: isRecurring === 'true' || isRecurring === true,
             recurringDetails: isRecurring ? recurringDetails : null,
+            imageUrl: finalImageUrl,
             videoUrl: finalVideoUrl,
             category: category || 'fellowship',
             createdBy: req.user._id,
@@ -389,19 +390,19 @@ router.put('/events/:id', adminAuth, upload.fields([
             if (req.files.image) {
                 const file = req.files.image[0];
                 event.imageUrl = file.path || `/uploads/${file.filename}`;
-            } else if (imageUrl) {
+            } else if (imageUrl !== undefined) {
                 event.imageUrl = imageUrl;
             }
 
             if (req.files.video) {
                 const file = req.files.video[0];
                 event.videoUrl = file.path || `/uploads/${file.filename}`;
-            } else if (videoUrl) {
+            } else if (videoUrl !== undefined) {
                 event.videoUrl = videoUrl;
             }
         } else {
-            if (imageUrl) event.imageUrl = imageUrl;
-            if (videoUrl) event.videoUrl = videoUrl;
+            if (imageUrl !== undefined) event.imageUrl = imageUrl;
+            if (videoUrl !== undefined) event.videoUrl = videoUrl;
         }
 
         event.updatedAt = Date.now();
