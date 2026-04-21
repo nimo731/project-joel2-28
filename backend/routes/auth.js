@@ -140,7 +140,8 @@ router.post('/login', [
         if (!user) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid credentials'
+                message: 'User no longer exists. Please sign up.',
+                errorCode: 'USER_NOT_FOUND'
             });
         }
 
@@ -163,7 +164,8 @@ router.post('/login', [
         if (!isMatch) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid credentials'
+                message: 'Incorrect password. Please try again.',
+                errorCode: 'INCORRECT_PASSWORD'
             });
         }
 

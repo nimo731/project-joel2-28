@@ -9,6 +9,7 @@ const Login = () => {
         password: ''
     });
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
@@ -27,6 +28,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setSuccessMessage('');
 
         const endpoint = '/auth/login';
 
@@ -45,19 +47,32 @@ const Login = () => {
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
 
-                // Redirect based on role returned from backend
-                if (user.role === 'admin') {
-                    navigate('/admin');
-                } else {
-                    navigate('/userdashboard');
-                }
+                setSuccessMessage('Login successful! Redirecting...');
+
+                setTimeout(() => {
+                    // Redirect based on role returned from backend
+                    if (user.role === 'admin') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/userdashboard');
+                    }
+                }, 1500);
             } else {
                 setError('Login failed. Please try again.');
             }
         } catch (err) {
             console.error('Login error detail:', err.response?.data);
             const errorMessage = err.response?.data?.message || 'Invalid credentials. Please try again.';
+            const errorCode = err.response?.data?.errorCode;
+
             setError(errorMessage);
+
+            // Redirect if user doesn't exist
+            if (errorCode === 'USER_NOT_FOUND') {
+                setTimeout(() => {
+                    navigate('/signup');
+                }, 2000);
+            }
         } finally {
             setLoading(false);
         }
@@ -97,6 +112,14 @@ const Login = () => {
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-gray-800">Login</h1>
                     </div>
+
+                    {/* Success Message */}
+                    {successMessage && (
+                        <div className="bg-green-50 text-green-600 text-sm p-3 rounded-lg mb-6 text-center border border-green-100 flex items-center justify-center">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                            {successMessage}
+                        </div>
+                    )}
 
                     {/* Login Form */}
 
