@@ -24,16 +24,6 @@ const Login = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleAutoFill = (type) => {
-        if (type === 'admin') {
-            setRole('admin');
-            setFormData({ email: 'admin@joel228.com', password: 'Joel228@Admin2025' });
-        } else {
-            setRole('user');
-            setFormData({ email: 'patiencekaranjah@gmail.com', password: 'makeit&shine06' });
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -134,23 +124,7 @@ const Login = () => {
 
                     {/* Login Form */}
 
-                    {/* Auto-fill Buttons (For Demo) */}
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                        <button
-                            type="button"
-                            onClick={() => handleAutoFill('user')}
-                            className="flex items-center justify-center py-2 px-4 bg-blue-50 text-blue-600 text-xs font-bold rounded hover:bg-blue-100 transition"
-                        >
-                            <FaMagic className="mr-2" /> Fill User
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleAutoFill('admin')}
-                            className="flex items-center justify-center py-2 px-4 bg-red-50 text-red-600 text-xs font-bold rounded hover:bg-red-100 transition"
-                        >
-                            <FaMagic className="mr-2" /> Fill Admin
-                        </button>
-                    </div>
+                    {/* Login Form */}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
@@ -163,6 +137,7 @@ const Login = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
+                                    autoComplete="username"
                                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-zegen-blue focus:ring-1 focus:ring-zegen-blue transition-colors"
                                     placeholder="Enter your email"
                                 />
@@ -184,6 +159,7 @@ const Login = () => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
+                                    autoComplete="current-password"
                                     className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-zegen-blue focus:ring-1 focus:ring-zegen-blue transition-colors"
                                     placeholder="Enter your password"
                                 />
