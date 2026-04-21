@@ -14,7 +14,11 @@ const auth = async (req, res, next) => {
 
         // First try with the regular JWT secret
         try {
-            const secret = process.env.JWT_SECRET?.trim() || 'joel228generation_secret';
+            const secret = process.env.JWT_SECRET?.trim();
+            if (!secret) {
+                console.error('CRITICAL: JWT_SECRET is missing from environment variables');
+                throw new Error('Server configuration error');
+            }
             const decoded = jwt.verify(token, secret);
             let user;
             if (req.app.locals.isDbConnected) {
@@ -35,7 +39,10 @@ const auth = async (req, res, next) => {
         } catch (err) {
             // If first attempt fails, try with admin JWT secret
             try {
-                const adminSecret = process.env.JWT_ADMIN_SECRET?.trim() || 'joel228admin_secret';
+                const adminSecret = process.env.JWT_ADMIN_SECRET?.trim();
+                if (!adminSecret) {
+                    throw new Error('Missing admin secret');
+                }
                 const decoded = jwt.verify(token, adminSecret);
                 let user;
                 if (req.app.locals.isDbConnected) {
@@ -54,7 +61,9 @@ const auth = async (req, res, next) => {
                 req.user.userId = user._id || user.id;
                 return next();
             } catch (adminErr) {
-                console.error('Admin auth error:', adminErr);
+                if (adminErr.message !== 'Missing admin secret') {
+                    console.error('Admin auth error:', adminErr.message);
+                }
                 throw new Error('Invalid token');
             }
         }

@@ -4,7 +4,6 @@ import api from '../services/api';
 import { FaLock, FaUser, FaShieldAlt, FaSignInAlt, FaMagic, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
-    const [role, setRole] = useState('user'); // 'user' or 'admin'
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -29,14 +28,13 @@ const Login = () => {
         setLoading(true);
         setError('');
 
-        const endpoint = role === 'admin' ? '/auth/admin/login' : '/auth/login';
+        const endpoint = '/auth/login';
 
         try {
             const response = await api.post(endpoint, formData);
 
             if (response.data.success || response.data.status === 'success') {
                 const token = response.data.token || response.data.data?.token;
-                // Admin login returns user in data.data.user, regular login in data.user
                 const user = response.data.data?.user || response.data.user;
 
                 if (!token || !user) {
@@ -47,8 +45,8 @@ const Login = () => {
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
 
-                // Redirect based on role
-                if (user.role === 'admin' || role === 'admin') {
+                // Redirect based on role returned from backend
+                if (user.role === 'admin') {
                     navigate('/admin');
                 } else {
                     navigate('/userdashboard');
@@ -98,31 +96,6 @@ const Login = () => {
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-gray-800">Login</h1>
                     </div>
-
-                    {/* Role Toggle */}
-                    <div className="flex bg-gray-100 p-1 rounded-lg mb-8">
-                        <button
-                            onClick={() => setRole('user')}
-                            className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${role === 'user' ? 'bg-white text-zegen-blue shadow' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                            Member
-                        </button>
-                        <button
-                            onClick={() => setRole('admin')}
-                            className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${role === 'admin' ? 'bg-white text-zegen-red shadow' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                            Admin
-                        </button>
-                    </div>
-
-                    {/* Error Message */}
-                    {error && (
-                        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-6 text-center">
-                            {error}
-                        </div>
-                    )}
-
-                    {/* Login Form */}
 
                     {/* Login Form */}
 
@@ -176,7 +149,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full py-4 rounded-lg font-bold text-white shadow-lg transition-all transform hover:-translate-y-0.5 ${role === 'admin' ? 'bg-zegen-red hover:bg-red-700' : 'bg-zegen-blue hover:bg-[#233555]'}`}
+                            className={`w-full py-4 rounded-lg font-bold text-white shadow-lg transition-all transform hover:-translate-y-0.5 bg-[#1a2b4b] hover:bg-[#233555]`}
                         >
                             {loading ? 'Authenticating...' : (
                                 <span className="flex items-center justify-center">
