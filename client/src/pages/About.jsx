@@ -65,7 +65,6 @@ const About = () => {
                                 </div>
                                 <h4 className="text-xl font-bold text-gray-800 mb-1">James Kinyanjui Maina</h4>
                                 <p className="text-zegen-red font-semibold mb-2">CEO & Founder</p>
-                                <span className="text-gray-600 text-sm">Leader of THE JOEL 2:28 GENERATION</span>
                             </div>
                             {/* Leader 2 */}
                             <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow text-center border border-gray-100">
@@ -73,8 +72,7 @@ const About = () => {
                                     <FaHandHoldingHeart />
                                 </div>
                                 <h4 className="text-xl font-bold text-gray-800 mb-1">Ruth Muriuki</h4>
-                                <p className="text-zegen-blue font-semibold mb-2">Ministry Helper</p>
-                                <span className="text-gray-600 text-sm">Supporting the vision</span>
+                                <p className="text-zegen-blue font-semibold mb-2">Ministry Leader</p>
                             </div>
                             {/* Leader 3 */}
                             <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow text-center border border-gray-100">
@@ -83,7 +81,6 @@ const About = () => {
                                 </div>
                                 <h4 className="text-xl font-bold text-gray-800 mb-1">Peter Kariuki</h4>
                                 <p className="text-zegen-red font-semibold mb-2">Ministry Leader</p>
-                                <span className="textgray-600 text-sm">Prayer & fellowship coordinator</span>
                             </div>
                         </div>
                     </div>

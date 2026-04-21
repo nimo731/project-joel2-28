@@ -1,16 +1,22 @@
 import React from 'react';
 import { FaFacebookF, FaYoutube, FaEnvelope, FaWhatsapp } from 'react-icons/fa';
+import QRCodeGenerator from './QRCodeGenerator';
 
 const Footer = () => {
     return (
         <footer style={{
             background: '#1a2b4b',
             color: 'white',
-            padding: '1.5rem 0',
+            padding: '2rem 0',
             textAlign: 'center',
             marginTop: '2rem'
         }}>
             <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
+                {/* QR Code Section */}
+                <div style={{ marginBottom: '2rem' }}>
+                    <QRCodeGenerator />
+                </div>
+
                 {/* Social Icons */}
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', marginBottom: '0.75rem' }}>
                     <a href="https://www.facebook.com/profile.php?id=100089073216441"
