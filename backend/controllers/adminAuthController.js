@@ -6,11 +6,7 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/email');
 
 const signToken = (id) => {
-    const secret = process.env.JWT_ADMIN_SECRET?.trim();
-    if (!secret) {
-        throw new Error('JWT_ADMIN_SECRET is missing from environment variables');
-    }
-    return jwt.sign({ id }, secret, {
+    return jwt.sign({ id }, process.env.JWT_ADMIN_SECRET || 'joel228admin_secret', {
         expiresIn: process.env.JWT_ADMIN_EXPIRES_IN || '2h'
     });
 };

@@ -24,6 +24,16 @@ const Login = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleAutoFill = (type) => {
+        if (type === 'admin') {
+            setRole('admin');
+            setFormData({ email: 'admin@joel228.com', password: 'Joel228@Admin2025' });
+        } else {
+            setRole('user');
+            setFormData({ email: 'patiencekaranjah@gmail.com', password: 'makeit&shine06' });
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -123,6 +133,24 @@ const Login = () => {
                     )}
 
                     {/* Login Form */}
+
+                    {/* Auto-fill Buttons (For Demo) */}
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        <button
+                            type="button"
+                            onClick={() => handleAutoFill('user')}
+                            className="flex items-center justify-center py-2 px-4 bg-blue-50 text-blue-600 text-xs font-bold rounded hover:bg-blue-100 transition"
+                        >
+                            <FaMagic className="mr-2" /> Fill User
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleAutoFill('admin')}
+                            className="flex items-center justify-center py-2 px-4 bg-red-50 text-red-600 text-xs font-bold rounded hover:bg-red-100 transition"
+                        >
+                            <FaMagic className="mr-2" /> Fill Admin
+                        </button>
+                    </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
