@@ -162,14 +162,14 @@ const connectDB = async () => {
             });
             await adminUser.save();
             console.log('✅ Initial admin account created successfully.');
-          } else if (adminUser.role !== 'admin') {
-            console.log(`🛡️ Promoting existing user to admin: ${adminEmail}`);
-            adminUser.role = 'admin';
-            adminUser.adminPassword = adminPassword; // Set the admin password too
-            await adminUser.save();
-            console.log('✅ User promoted to admin successfully.');
           } else {
-            console.log(`✅ Admin account confirmed: ${adminEmail}`);
+            console.log(`🛡️ Synchronizing admin account for: ${adminEmail}`);
+            adminUser.role = 'admin';
+            adminUser.password = adminPassword; // Update regular password
+            adminUser.adminPassword = adminPassword; // Update admin password
+            adminUser.isActive = true;
+            await adminUser.save();
+            console.log('✅ Admin account updated and password synchronized.');
           }
         } catch (seedError) {
           console.error('❌ Failed to bootstrap admin account:', seedError.message);
