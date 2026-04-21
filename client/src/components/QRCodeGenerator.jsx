@@ -1,33 +1,39 @@
-import React, { useRef } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import React, { useRef, useState, useEffect } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { FaDownload, FaShareAlt } from 'react-icons/fa';
 
 const QRCodeGenerator = () => {
-    const qrRef = useRef();
-    const websiteUrl = 'https://project-joel2-28.onrender.com';
+    const canvasRef = useRef();
+    const [websiteUrl, setWebsiteUrl] = useState('');
     const logoUrl = '/joel228-logo.png';
 
+    useEffect(() => {
+        // Use the current origin as the website URL
+        setWebsiteUrl(window.location.origin);
+    }, []);
+
     const downloadQRCode = () => {
-        const svg = qrRef.current.querySelector('svg');
-        const svgData = new XMLSerializer().serializeToString(svg);
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
+        const canvas = canvasRef.current.querySelector('canvas');
+        if (!canvas) return;
 
-        img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
-            const pngFile = canvas.toDataURL('image/png');
-            const downloadLink = document.createElement('a');
-            downloadLink.download = 'joel-228-qr-code.png';
-            downloadLink.href = pngFile;
-            downloadLink.click();
-        };
+        // Create a temporary canvas with a white background for the PNG
+        const downloadCanvas = document.createElement('canvas');
+        const context = downloadCanvas.getContext('2d');
+        downloadCanvas.width = canvas.width;
+        downloadCanvas.height = canvas.height;
 
-        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        // Fill background with white
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, downloadCanvas.width, downloadCanvas.height);
+
+        // Draw the QR code canvas on top
+        context.drawImage(canvas, 0, 0);
+
+        const pngFile = downloadCanvas.toDataURL('image/png');
+        const downloadLink = document.createElement('a');
+        downloadLink.download = 'joel-228-qr-code.png';
+        downloadLink.href = pngFile;
+        downloadLink.click();
     };
 
     const shareQRCode = () => {
@@ -42,11 +48,13 @@ const QRCodeGenerator = () => {
         }
     };
 
+    if (!websiteUrl) return null;
+
     return (
         <div className="flex flex-col items-center justify-center p-6 bg-[#1a2b4b]/50 rounded-2xl border border-white/10 backdrop-blur-sm">
             <h4 className="text-white font-serif text-xl mb-4">Scan to Visit Us</h4>
-            <div ref={qrRef} className="bg-white p-4 rounded-xl shadow-2xl mb-6">
-                <QRCodeSVG
+            <div ref={canvasRef} className="bg-white p-4 rounded-xl shadow-2xl mb-6">
+                <QRCodeCanvas
                     value={websiteUrl}
                     size={200}
                     bgColor={"#ffffff"}
@@ -57,8 +65,8 @@ const QRCodeGenerator = () => {
                         src: logoUrl,
                         x: undefined,
                         y: undefined,
-                        height: 40,
-                        width: 40,
+                        height: 50,
+                        width: 50,
                         excavate: true,
                     }}
                 />
