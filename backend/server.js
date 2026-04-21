@@ -141,28 +141,39 @@ const connectDB = async () => {
       console.log('🔥 Connected to MongoDB - THE JOEL 2:28 GENERATION');
       app.locals.isDbConnected = true;
 
-      // --- AUTO-SEED NEW DATABASE ---
+      // --- ROBUST ADMIN BOOTSTRAP ---
       const User = require('./models/User');
-      const count = await User.countDocuments();
-      if (count === 0) {
-        console.log('🌱 Empty database detected. Seeding default accounts...');
-        const usersToSeed = [];
-        if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-          usersToSeed.push({
-            email: process.env.ADMIN_EMAIL.trim(),
-            password: process.env.ADMIN_PASSWORD.trim(),
-            role: 'admin',
-            name: 'System Admin',
-            adminPassword: process.env.ADMIN_PASSWORD.trim()
-          });
+      if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+        try {
+          const adminEmail = process.env.ADMIN_EMAIL.trim().toLowerCase();
+          const adminPassword = process.env.ADMIN_PASSWORD.trim();
+
+          let adminUser = await User.findOne({ email: adminEmail });
+
+          if (!adminUser) {
+            console.log(`🌱 Creating initial admin account: ${adminEmail}`);
+            adminUser = new User({
+              name: 'System Admin',
+              email: adminEmail,
+              password: adminPassword,
+              adminPassword: adminPassword,
+              role: 'admin',
+              isActive: true
+            });
+            await adminUser.save();
+            console.log('✅ Initial admin account created successfully.');
+          } else if (adminUser.role !== 'admin') {
+            console.log(`🛡️ Promoting existing user to admin: ${adminEmail}`);
+            adminUser.role = 'admin';
+            adminUser.adminPassword = adminPassword; // Set the admin password too
+            await adminUser.save();
+            console.log('✅ User promoted to admin successfully.');
+          } else {
+            console.log(`✅ Admin account confirmed: ${adminEmail}`);
+          }
+        } catch (seedError) {
+          console.error('❌ Failed to bootstrap admin account:', seedError.message);
         }
-        for (const u of usersToSeed) {
-          console.log(`👤 Seeding: ${u.email}`);
-          const newUser = new User(u);
-          newUser.isActive = true;
-          await newUser.save();
-        }
-        console.log('🎉 ALL DEFAULT ACCOUNTS SEEDED SUCCESSFULLY');
       }
       // -----------------------------
 
