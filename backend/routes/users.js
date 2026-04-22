@@ -196,15 +196,19 @@ router.get('/admin-contact', auth, async (req, res) => {
 router.post('/find', auth, async (req, res) => {
     try {
         const { email, name } = req.body;
-        let query = {};
+        const searchTerm = (name || email || '').trim();
 
-        if (name) {
-            query.name = new RegExp(name.trim(), 'i');
-        } else if (email) {
-            query.email = new RegExp('^' + email.trim() + '$', 'i');
-        } else {
+        if (!searchTerm) {
             return res.status(400).json({ success: false, message: 'Please provide a name or email' });
         }
+
+        // Search both name and email fields for the search term
+        const query = {
+            $or: [
+                { name: new RegExp(searchTerm, 'i') },
+                { email: new RegExp(searchTerm, 'i') }
+            ]
+        };
 
         const user = await User.findOne(query).select('name email _id');
         if (!user) {
