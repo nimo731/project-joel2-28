@@ -136,11 +136,11 @@ const AdminMessages = () => {
 
     // Handle initial Compose (which creates a new thread)
     const handleCompose = async () => {
-        const email = prompt('Enter the user email to message:');
-        if (!email) return;
+        const name = prompt('Enter the user name to message:');
+        if (!name) return;
 
         try {
-            const response = await api.post('/users/find', { email });
+            const response = await api.post('/users/find', { name });
             if (response.data.success) {
                 setReplyRecipient(response.data.user);
             }

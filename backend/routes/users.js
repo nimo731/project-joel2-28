@@ -191,13 +191,22 @@ router.get('/admin-contact', auth, async (req, res) => {
 });
 
 // @route   POST /api/users/find
-// @desc    Find user by email (Admin only ideally, but kept simple)
+// @desc    Find user by name or email
 // @access  Private
 router.post('/find', auth, async (req, res) => {
     try {
-        const { email } = req.body;
-        // Use a case-insensitive regex specifically matching the trimmed email
-        const user = await User.findOne({ email: new RegExp('^' + email.trim() + '$', 'i') }).select('name email _id');
+        const { email, name } = req.body;
+        let query = {};
+
+        if (name) {
+            query.name = new RegExp(name.trim(), 'i');
+        } else if (email) {
+            query.email = new RegExp('^' + email.trim() + '$', 'i');
+        } else {
+            return res.status(400).json({ success: false, message: 'Please provide a name or email' });
+        }
+
+        const user = await User.findOne(query).select('name email _id');
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
