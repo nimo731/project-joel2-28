@@ -3,6 +3,14 @@ import api from '../services/api';
 import { FaPlay, FaCalendar, FaUser, FaSearch, FaVideo } from 'react-icons/fa';
 import EmptyState from '../components/EmptyState';
 
+const getYouTubeThumbnail = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+    return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+};
+
 const Sermons = () => {
     const [sermons, setSermons] = useState([]);
     const [filteredSermons, setFilteredSermons] = useState([]);
@@ -144,9 +152,15 @@ const Sermons = () => {
                             <div key={sermon._id} className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full hover:-translate-y-1">
                                 {/* Thumbnail Container */}
                                 <div className="relative aspect-video bg-gray-200 overflow-hidden">
-                                    {sermon.thumbnailUrl ? (
+                                    {(sermon.thumbnailUrl && sermon.thumbnailUrl !== 'null' && sermon.thumbnailUrl !== 'undefined') ? (
                                         <img
                                             src={sermon.thumbnailUrl}
+                                            alt={sermon.title}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    ) : getYouTubeThumbnail(sermon.videoLink) ? (
+                                        <img
+                                            src={getYouTubeThumbnail(sermon.videoLink)}
                                             alt={sermon.title}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />

@@ -9,6 +9,15 @@ const upload = require('../middleware/upload');
 const { cloudinary } = require('../config/cloudinary');
 const router = express.Router();
 
+// Helper to extract YouTube video ID and get thumbnail URL
+const getYouTubeThumbnail = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+    return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+};
+
 // All routes in this file are protected and require admin authentication
 router.use(auth.auth);
 router.use(auth.adminAuth);
@@ -195,6 +204,12 @@ router.post('/sermons', adminAuth, upload.fields([
             }
         }
 
+        // Auto-generate YouTube thumbnail if videoUrl is a YouTube link and no custom thumbnail is uploaded
+        if (!finalThumbnailUrl || finalThumbnailUrl === 'null' || finalThumbnailUrl === 'undefined') {
+            const ytThumb = getYouTubeThumbnail(finalVideoLink);
+            if (ytThumb) finalThumbnailUrl = ytThumb;
+        }
+
         const newSermon = new Sermon({
             title,
             preacher: speaker, // Model uses 'preacher'
@@ -254,6 +269,12 @@ router.put('/sermons/:id', adminAuth, upload.fields([
         } else {
             if (thumbnailUrl) sermon.thumbnailUrl = thumbnailUrl;
             if (videoUrl) sermon.videoLink = videoUrl;
+        }
+
+        // Auto-generate YouTube thumbnail if videoLink is a YouTube link and no custom thumbnail exists/uploaded
+        if (!sermon.thumbnailUrl || sermon.thumbnailUrl === 'null' || sermon.thumbnailUrl === 'undefined') {
+            const ytThumb = getYouTubeThumbnail(sermon.videoLink);
+            if (ytThumb) sermon.thumbnailUrl = ytThumb;
         }
 
         sermon.updatedAt = Date.now();

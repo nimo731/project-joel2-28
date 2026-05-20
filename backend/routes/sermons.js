@@ -5,6 +5,15 @@ const multer = require('multer');
 const { auth, adminAuth } = require('../middleware/auth');
 const Sermon = require('../models/Sermon');
 
+// Helper to extract YouTube video ID and get thumbnail URL
+const getYouTubeThumbnail = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+    return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+};
+
 const router = express.Router();
 
 // Multer storage for optional uploads
@@ -100,6 +109,12 @@ router.post('/', adminAuth, upload.fields([
     let thumbnailUrl = body.thumbnailUrl || null;
     if (req.files?.thumbnail?.[0]) thumbnailUrl = `/uploads/sermons/${req.files.thumbnail[0].filename}`;
 
+    // Auto-generate YouTube thumbnail if videoLink is a YouTube link and no custom thumbnail is uploaded
+    if (!thumbnailUrl || thumbnailUrl === 'null' || thumbnailUrl === 'undefined') {
+      const ytThumb = getYouTubeThumbnail(videoLink);
+      if (ytThumb) thumbnailUrl = ytThumb;
+    }
+
     // Required fields
     const required = ['title', 'preacher', 'description', 'date'];
     const missing = required.filter(f => !body[f]);
@@ -159,6 +174,12 @@ router.patch('/:id', adminAuth, upload.fields([
     if (req.files?.video?.[0]) sermon.videoLink = `/uploads/sermons/${req.files.video[0].filename}`;
     if (req.files?.audio?.[0] && !req.files?.video?.[0]) sermon.videoLink = `/uploads/sermons/${req.files.audio[0].filename}`;
     if (req.files?.thumbnail?.[0]) sermon.thumbnailUrl = `/uploads/sermons/${req.files.thumbnail[0].filename}`;
+
+    // Auto-generate YouTube thumbnail if videoLink is a YouTube link and no custom thumbnail exists/uploaded
+    if (!sermon.thumbnailUrl || sermon.thumbnailUrl === 'null' || sermon.thumbnailUrl === 'undefined') {
+      const ytThumb = getYouTubeThumbnail(sermon.videoLink);
+      if (ytThumb) sermon.thumbnailUrl = ytThumb;
+    }
 
     await sermon.save();
     res.json({ success: true, sermon });
